@@ -1,0 +1,178 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: 18 63 63;
+    --color-accent: 197 90 42;
+    --color-gold: #edb95e;
+    --color-canvas: #f4f1e9;
+    --color-surface: #ffffff;
+    --color-ink: #162527;
+    --color-ink-soft: #435557;
+    --color-ink-muted: #748183;
+    --color-line: #dcd8cd;
+  }
+
+  :root.dark {
+    --color-canvas: #0e1616;
+    --color-surface: #152322;
+    --color-ink: #eef4f2;
+    --color-ink-soft: #c3d3d0;
+    --color-ink-muted: #93a8a5;
+    --color-line: #2c403e;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-canvas text-ink font-sans;
+    font-feature-settings: 'ss01', 'cv01';
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    @apply font-serif text-primary;
+  }
+
+  ::selection {
+    background-color: rgba(193, 98, 43, 0.22);
+  }
+
+  /* focus ring for keyboard users */
+  :focus-visible {
+    outline: 2px solid rgb(var(--color-accent));
+    outline-offset: 2px;
+  }
+
+  a {
+    @apply text-accent;
+  }
+
+  .dark .text-primary,
+  .dark h1:not(.text-white),
+  .dark h2:not(.text-white),
+  .dark h3:not(.text-white),
+  .dark h4:not(.text-white),
+  .dark h5:not(.text-white) {
+    color: #b9d5d1;
+  }
+
+  .dark .text-white {
+    color: #ffffff;
+  }
+
+  .dark .bg-white {
+    background-color: var(--color-surface);
+  }
+
+  .dark .bg-white\/50 {
+    background-color: color-mix(in srgb, var(--color-surface) 50%, transparent);
+  }
+}
+
+@layer components {
+  .container-content {
+    @apply mx-auto w-full max-w-content px-5 sm:px-8 lg:px-12;
+  }
+
+  .section-kicker {
+    @apply text-xs font-semibold uppercase tracking-[0.24em] text-accent;
+  }
+
+  .hero-gradient {
+    background-image: linear-gradient(
+      to top,
+      color-mix(in srgb, rgb(var(--color-primary)) 95%, transparent),
+      color-mix(in srgb, rgb(var(--color-primary)) 70%, transparent),
+      color-mix(in srgb, rgb(var(--color-primary)) 40%, transparent)
+    );
+  }
+
+  .hero-card-bg {
+    background-color: color-mix(in srgb, rgb(var(--color-primary)) 90%, transparent);
+  }
+
+  .slider-overlay {
+    background-image:
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, rgb(var(--color-primary)) 94%, transparent) 0%,
+        color-mix(in srgb, rgb(var(--color-primary)) 72%, transparent) 44%,
+        color-mix(in srgb, rgb(var(--color-primary)) 18%, transparent) 78%
+      ),
+      linear-gradient(
+        0deg,
+        color-mix(in srgb, rgb(var(--color-primary)) 76%, transparent) 0%,
+        transparent 55%
+      );
+  }
+
+  .prose-rml {
+    @apply max-w-prose text-ink-soft;
+  }
+  .prose-rml p {
+    @apply mb-4 leading-7;
+  }
+  .prose-rml h2 {
+    @apply mt-8 mb-3 text-2xl;
+  }
+  .prose-rml h3 {
+    @apply mt-6 mb-2 text-xl;
+  }
+  .prose-rml ul {
+    @apply mb-4 list-disc pl-5;
+  }
+  .prose-rml ol {
+    @apply mb-4 list-decimal pl-5;
+  }
+  .prose-rml li {
+    @apply mb-1 leading-7;
+  }
+  .prose-rml a {
+    @apply text-accent underline underline-offset-2;
+  }
+  .prose-rml blockquote {
+    @apply my-4 border-l-2 border-accent pl-4 italic text-ink;
+  }
+  .prose-rml strong {
+    @apply font-semibold text-ink;
+  }
+
+  /* Tiptap editor (admin) */
+  .tiptap p.is-editor-empty:first-child::before {
+    @apply pointer-events-none float-left h-0 text-sm text-ink-muted/50;
+    content: attr(data-placeholder);
+  }
+  .tiptap:focus {
+    outline: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes slide-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
