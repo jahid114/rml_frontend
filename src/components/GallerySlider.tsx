@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Pause, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from './ui/cn';
+import { Eyebrow } from './ui/primitives';
 
 export interface GallerySlide {
   image: string;
@@ -45,7 +46,7 @@ export function GallerySlider({ slides }: { slides: GallerySlide[] }) {
 
   return (
     <section
-      className='relative isolate min-h-[620px] overflow-hidden bg-primary sm:min-h-[700px] lg:min-h-[760px]'
+      className='relative isolate min-h-[540px] overflow-hidden bg-primary sm:min-h-[600px] lg:min-h-[clamp(540px,calc(100svh-88px),680px)]'
       aria-roledescription='carousel'
       aria-label='Featured stories'
       onTouchStart={(event) => {
@@ -75,15 +76,14 @@ export function GallerySlider({ slides }: { slides: GallerySlide[] }) {
       <div className='slider-overlay absolute inset-0' />
       <div className='absolute inset-0 opacity-25 [background-image:linear-gradient(rgba(255,255,255,.07)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.07)_1px,transparent_1px)] [background-size:80px_80px]' />
 
-      <div className='container-content relative flex min-h-[620px] items-end pb-28 pt-20 sm:min-h-[700px] sm:pb-32 lg:min-h-[760px] lg:pb-36'>
+      <div className='container-content relative flex min-h-[540px] items-center py-16 pb-24 sm:min-h-[600px] sm:pb-28 lg:min-h-[clamp(540px,calc(100svh-88px),680px)] lg:py-12 lg:pb-24'>
         <div className='max-w-4xl' aria-live='polite'>
-          <div className='mb-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.24em] text-gold'>
-            <span className='h-px w-10 bg-gold' />
+          <Eyebrow tone="gold" rule className="mb-4">
             {slide.eyebrow}
-          </div>
+          </Eyebrow>
           <h1 className='max-w-2xl text-[clamp(1.875rem,4.5vw,3.25rem)] font-medium leading-[1.08] tracking-[-0.03em] text-white'>{slide.title}</h1>
-          <p className='mt-5 max-w-xl text-sm leading-6 text-white/75 sm:text-[15px] sm:leading-7'>{slide.description}</p>
-          <div className='mt-9 flex flex-wrap items-center gap-5'>
+          <p className='mt-4 max-w-xl text-sm leading-6 text-white/75 sm:text-[15px] sm:leading-7'>{slide.description}</p>
+          <div className='mt-7 flex flex-wrap items-center gap-5'>
             <Link
               to={slide.to}
               className='group inline-flex items-center gap-3 rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-primary transition hover:bg-accent hover:text-white'

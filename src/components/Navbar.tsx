@@ -19,6 +19,7 @@ const NAV: NavItem[] = [
     to: '/team',
     children: [
       { key: 'team', to: '/team', label: 'Research Team' },
+      { key: 'research-assistants', to: '/team/research-assistants', label: 'Research Assistants' },
       { key: 'non-resident-fellows', to: '/team/non-resident-fellows', label: 'Non-Resident Fellows' },
       { key: 'affiliates', to: '/team/affiliates', label: 'Research Affiliates' },
     ],
@@ -26,6 +27,14 @@ const NAV: NavItem[] = [
   { key: 'research', to: '/research' },
   { key: 'publications', to: '/publications' },
   { key: 'events', to: '/events' },
+  {
+    key: 'programmes',
+    to: '/programmes/internship',
+    children: [
+      { key: 'internship', to: '/programmes/internship', label: 'Internship Programme' },
+      { key: 'visiting-fellowship', to: '/programmes/visiting-fellowship', label: 'Visiting Fellowship' },
+    ],
+  },
   { key: 'join', to: '/join' },
   { key: 'contact', to: '/contact' },
 ];
@@ -52,6 +61,13 @@ export function Navbar() {
   const labels = settings?.navLabels ?? {};
   const labelFor = (key: string) => labels[key] ?? key.charAt(0).toUpperCase() + key.slice(1).replace(/-/g, ' ');
 
+  const logoUrl = settings?.logoUrl;
+  const [logoError, setLogoError] = useState(false);
+  useEffect(() => {
+    setLogoError(false);
+  }, [logoUrl]);
+  const showLogo = Boolean(logoUrl) && !logoError;
+
   return (
     <header
       className={cn(
@@ -59,19 +75,24 @@ export function Navbar() {
         scrolled ? 'border-line bg-canvas/95 shadow-sm backdrop-blur-xl' : 'border-transparent bg-canvas',
       )}
     >
-      <div className='container-content flex h-[72px] items-center justify-between gap-4 lg:h-[88px]'>
-        <Link to='/' className='flex items-center gap-3' aria-label='RML home'>
-          {settings?.logoUrl ? (
-            <img src={settings.logoUrl} alt='RML logo' className='h-9 w-auto lg:h-11' />
+      <div className='mx-auto flex h-[72px] w-full max-w-[1440px] items-center gap-3 px-3 sm:px-4 lg:h-[72px] lg:px-4 xl:px-6'>
+        <Link to='/' className='flex shrink-0 items-center gap-2' aria-label='RML home'>
+          {showLogo ? (
+            <img
+              src={logoUrl}
+              alt='RML logo'
+              className='h-8 w-auto lg:h-9'
+              onError={() => setLogoError(true)}
+            />
           ) : (
             <span className='font-serif text-2xl text-primary'>RML</span>
           )}
-          <span className='hidden border-l border-line pl-3 text-xs font-semibold uppercase tracking-[.13em] text-ink-soft sm:block'>
-            Refugee &amp; Migration Lab
+          <span className='hidden border-l border-line pl-2 text-xs font-semibold uppercase tracking-[.13em] text-ink-soft min-[1350px]:block'>
+            Refugee and Migration Lab
           </span>
         </Link>
 
-        <nav className='hidden items-center gap-1 lg:flex' aria-label='Primary'>
+        <nav className='ml-auto hidden items-center gap-1 lg:flex' aria-label='Primary'>
           {NAV.map((item) => (
             <div
               key={item.key}
@@ -84,7 +105,7 @@ export function Navbar() {
                 end={item.to === '/'}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-1 rounded-full px-3 py-2 text-xs font-semibold uppercase tracking-wide transition-colors',
+                    'flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-2 text-xs font-semibold uppercase tracking-wide transition-colors',
                     isActive ? 'bg-primary text-white' : 'text-ink hover:bg-primary/5 hover:text-primary',
                   )
                 }
@@ -111,7 +132,7 @@ export function Navbar() {
           ))}
         </nav>
 
-        <div className='flex items-center gap-1'>
+        <div className='flex shrink-0 items-center'>
           <button
             type='button'
             className='rounded-md p-2 text-ink transition-colors hover:bg-primary/5'

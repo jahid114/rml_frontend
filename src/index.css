@@ -84,10 +84,6 @@
     @apply mx-auto w-full max-w-content px-5 sm:px-8 lg:px-12;
   }
 
-  .section-kicker {
-    @apply text-xs font-semibold uppercase tracking-[0.24em] text-accent;
-  }
-
   .hero-gradient {
     background-image: linear-gradient(
       to top,
@@ -116,17 +112,52 @@
       );
   }
 
+  /* Readability policy (academic): no global text alignment — body copy
+     uses the browser default (left). Long-form text opts into
+     justification explicitly, either by living inside .prose-rml
+     (rich-text bodies, justified below) or via Tailwind `text-justify`
+     on the element. Centered sections (empty states, error blocks)
+     inherit `text-center` naturally; no specificity overrides needed. */
+
   .prose-rml {
     @apply max-w-prose text-ink-soft;
   }
-  .prose-rml p {
-    @apply mb-4 leading-7;
+  /* Full-width opt-out for detail pages: <RichText className="max-w-none ..." />.
+     Higher specificity than .prose-rml so the cap is reliably lifted. */
+  .prose-rml.max-w-none {
+    max-width: none;
   }
-  .prose-rml h2 {
+  .prose-rml p {
+    @apply mb-4 leading-7 text-justify;
+  }
+  /* Editor font-size marks (data-size spans) — same scale in admin + public. */
+  .prose-rml [data-size='small'] {
+    font-size: 0.875em;
+  }
+  .prose-rml [data-size='large'] {
+    font-size: 1.15em;
+  }
+  .prose-rml [data-size='xl'] {
+    font-size: 1.35em;
+  }
+  /* Accent list markers for unordered lists (brand detail, print-like). */
+  .prose-rml ul > li::marker {
+    color: rgb(var(--color-accent));
+  }  .prose-rml h2 {
     @apply mt-8 mb-3 text-2xl;
   }
   .prose-rml h3 {
     @apply mt-6 mb-2 text-xl;
+  }
+  /* Guard pasted/legacy content: h1 collapses to the h2 scale and h4–h6
+     to a single small-heading scale so headings stay uniform. */
+  .prose-rml h1 {
+    @apply mt-8 mb-3 text-2xl;
+  }
+  .prose-rml h4,
+  .prose-rml h5,
+  .prose-rml h6 {
+    @apply mt-6 mb-2 text-lg;
   }
   .prose-rml ul {
     @apply mb-4 list-disc pl-5;
@@ -138,7 +169,7 @@
     @apply mb-1 leading-7;
   }
   .prose-rml a {
-    @apply text-accent underline underline-offset-2;
+    @apply text-accent underline decoration-accent/40 underline-offset-2 transition-colors hover:decoration-accent;
   }
   .prose-rml blockquote {
     @apply my-4 border-l-2 border-accent pl-4 italic text-ink;

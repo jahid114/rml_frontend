@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Briefcase, Mail, Calendar, ArrowRight } from 'lucide-react';
 import { Hero } from '@/components/Hero';
@@ -8,6 +9,64 @@ import { formatShortDate } from '@/lib/utils';
 
 const HERO_IMAGE =
   '/images/site/hero-humanitarian-aid.jpg';
+
+/**
+ * Splits a job's rich HTML description at its headings (h1/h2/h3) so sections
+ * like "Responsibilities" and "Qualifications" can sit side by side, mirroring
+ * the two-column Eligibility / How-to-apply layout of the programme pages.
+ * Falls back to a single block when no headings are present.
+ */
+function splitJobSections(html: string): { intro: string; sections: { heading: string; body: string }[] } {
+  const fallback = { intro: html, sections: [] as { heading: string; body: string }[] };
+  try {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const children = Array.from(doc.body.children);
+    const firstHeading = children.findIndex((el) => /^H[1-3]$/.test(el.tagName));
+    if (firstHeading === -1) return fallback;
+    const intro = children
+      .slice(0, firstHeading)
+      .map((el) => el.outerHTML)
+      .join('');
+    const sections: { heading: string; body: string }[] = [];
+    let current: { heading: string; parts: string[] } | null = null;
+    for (const el of children.slice(firstHeading)) {
+      if (/^H[1-3]$/.test(el.tagName)) {
+        if (current) sections.push({ heading: current.heading, body: current.parts.join('') });
+        current = { heading: el.textContent?.trim() ?? '', parts: [] };
+      } else if (current) {
+        current.parts.push(el.outerHTML);
+      }
+    }
+    if (current) sections.push({ heading: current.heading, body: current.parts.join('') });
+    if (sections.length === 0) return fallback;
+    return { intro, sections };
+  } catch {
+    return fallback;
+  }
+}
+
+function JobDescription({ html }: { html: string }) {
+  const { intro, sections } = useMemo(() => splitJobSections(html), [html]);
+  // Single block (no headings found) — full width, justified.
+  if (sections.length < 2) {
+    return <RichText html={html} className="max-w-none" />;
+  }
+  return (
+    <div>
+      {intro.trim() && <RichText html={intro} className="max-w-none" />}
+      <div className="grid gap-8 lg:grid-cols-2">
+        {sections.map((s, i) => (
+          <section key={i}>
+            <h3 className="text-xl">{s.heading}</h3>
+            <div className="mt-3">
+              <RichText html={s.body || '<p>—</p>'} className="max-w-none" />
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function JoinPage() {
   const { data: jobs, isLoading } = useOpenJobs();
@@ -90,7 +149,7 @@ export default function JoinPage() {
                   </div>
                   {job.richDescription && (
                     <div className="mt-6 border-t border-line pt-6">
-                      <RichText html={job.richDescription} />
+                      <JobDescription html={job.richDescription} />
                     </div>
                   )}
                 </article>
@@ -102,7 +161,7 @@ export default function JoinPage() {
         {/* How we recruit */}
         <section className="mt-16 rounded-card bg-white p-8 shadow-card sm:p-10">
           <SectionHeading eyebrow="How we recruit" title="What to expect" />
-          <p className="mt-4 max-w-prose text-ink-soft">
+          <p className="mt-4 max-w-prose text-justify text-ink-soft">
             RML reviews applications on a rolling basis. Shortlisted candidates are invited to a
             conversation with the relevant research lead. We welcome applicants from the Global
             South and from displaced backgrounds, and we are committed to an inclusive, equitable

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useHomeContent, useAboutContent, useInternshipContent, useVisitingContent, useContactContent, useUpdatePageContent } from '@/lib/hooks';
-import { uploadMediaFile } from '@/lib/client';
+import { useHomeContent, useAboutContent, useContactContent, usePageContent, useUpdatePageContent } from '@/lib/hooks';
+import { ApiError, uploadMediaFile } from '@/lib/client';
 import { FormField, Input, Textarea } from '@/components/admin/FormField';
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { RepeatableList } from '@/components/admin/RepeatableList';
@@ -10,7 +10,7 @@ import { HeroSlidesEditor } from '@/components/admin/HeroSlidesEditor';
 import { Button } from '@/components/ui/primitives';
 import { BackButton } from '@/components/admin/BackButton';
 import { showToast } from '@/components/admin/Toast';
-import { normalizeHomeContent } from '@/lib/utils';
+import { normalizeAboutContent, normalizeHomeContent, normalizeProgrammeContent } from '@/lib/utils';
 import type { PageContentKey, HomeContent, AboutContent, ProgrammePageContent, ContactContent } from '@/lib/types';
 
 /** Upload pending slide files (keyed by slide index) and return slides with final URLs. */
@@ -66,8 +66,13 @@ function HomeEditor() {
       showToast('error', 'Add at least one hero slide');
       return;
     }
+    // A newly picked file lives only in slideFiles until upload on save —
+    // treat it as satisfying the image requirement so replacing an image
+    // (remove old → pick new → save) doesn't trip validation.
+    const hasImage = (imageUrl: string, index: number) =>
+      !!imageUrl || !!slideFiles.current[index];
     const incomplete = form.heroSlides.findIndex(
-      (s) => !s.imageUrl || !s.eyebrow || !s.title || !s.description || !s.ctaLabel || !s.ctaUrl,
+      (s, i) => !hasImage(s.imageUrl, i) || !s.eyebrow || !s.title || !s.description || !s.ctaLabel || !s.ctaUrl,
     );
     if (incomplete !== -1) {
       showToast('error', `Hero slide ${incomplete + 1} is incomplete — fill every field`);
@@ -79,7 +84,7 @@ function HomeEditor() {
       slideFiles.current = {};
       showToast('success', 'Home content saved');
       navigate('/admin/pages');
-    } catch { showToast('error', 'Something went wrong'); }
+    } catch (e) { showToast('error', e instanceof ApiError ? `Save failed (${e.status}): ${e.message}` : 'Something went wrong'); }
   };
 
   if (isLoading || !form) return <div className="h-64 animate-pulse rounded-card bg-line/40" />;
@@ -102,6 +107,23 @@ function HomeEditor() {
           slides={form.heroSlides}
           onChange={(slides) => set('heroSlides', slides)}
           onFile={(i, file) => { slideFiles.current[i] = file; }}
+          onSlideRemove={(i) => {
+            const next: Record<number, File | null> = {};
+            for (const [k, v] of Object.entries(slideFiles.current)) {
+              const idx = Number(k);
+              if (Number.isNaN(idx)) continue;
+              if (idx < i) next[idx] = v;
+              else if (idx > i) next[idx - 1] = v;
+            }
+            slideFiles.current = next;
+          }}
+          onSlideMove={(from, to) => {
+            const next = { ...slideFiles.current };
+            const tmp = next[from] ?? null;
+            next[from] = next[to] ?? null;
+            next[to] = tmp;
+            slideFiles.current = next;
+          }}
         />
         <label className="flex items-start gap-2 text-sm">
           <input
@@ -157,7 +179,7 @@ function HomeEditor() {
         <FormField label="Intro">
           <Textarea rows={2} value={form.whatWeDoIntro} onChange={(e) => set('whatWeDoIntro', e.target.value)} />
         </FormField>
-        <WhatWeDoEditor items={form.whatWeDoItems} onChange={(items) => set('whatWeDoItems', items)} />
+        <WhatWeDoEditor items={form.whatWeDoItems} onChange={(items) => set('whatWeDoItems', items)} max={4} variant="dark" />
       </section>
 
       {/* ── Featured / Now at RML ── */}
@@ -239,21 +261,62 @@ function AboutEditor() {
   const [form, setForm] = useState<AboutContent | null>(null);
   const [heroFile, setHeroFile] = useState<File | null>(null);
 
-  useEffect(() => { if (data) setForm(data); }, [data]);
+  useEffect(() => { if (data) setForm((prev) => prev ?? normalizeAboutContent(data)); }, [data]);
 
   const set = <K extends keyof AboutContent>(key: K, val: AboutContent[K]) => setForm((f) => f ? { ...f, [key]: val } : f);
 
   const handleSave = async () => {
     if (!form) return;
+    // Like the hero slides above, a newly picked file lives only in heroFile
+    // until upload on save — accept it as satisfying the required image.
+    if (!form.heroImageUrl.trim() && !heroFile) {
+      showToast('error', 'Hero image is required');
+      return;
+    }
+    if (!form.introText.trim() || !form.missionText.trim()) {
+      showToast('error', 'Intro text and mission text are required');
+      return;
+    }
+    if (!Array.isArray(form.whatWeDoItems) || form.whatWeDoItems.length === 0) {
+      showToast('error', 'Add at least one “What RML does” card');
+      return;
+    }
+    if (form.whatWeDoItems.length > 6) {
+      showToast('error', '“What RML does” cards: maximum 6 items');
+      return;
+    }
+    const incomplete = form.whatWeDoItems.findIndex((it) => !it.label.trim() || !it.text.trim());
+    if (incomplete !== -1) {
+      showToast('error', `“What RML does” card ${incomplete + 1} needs both a heading and body text`);
+      return;
+    }
     try {
       let heroImageUrl = form.heroImageUrl;
       if (heroFile) {
         heroImageUrl = (await uploadMediaFile(heroFile, heroFile.name, 'pages')).url;
       }
-      await updateContent.mutateAsync({ key: 'about', data: { ...form, heroImageUrl } });
+      const payload = { ...form, heroImageUrl };
+      try {
+        await updateContent.mutateAsync({ key: 'about', data: payload });
+      } catch (e) {
+        // Older backends validate About content against the previous schema
+        // (no section-heading fields) and reject unknown keys with 400.
+        // Retry with the legacy shape so card edits always persist — headings
+        // fall back to defaults until the backend accepts the new fields.
+        if (e instanceof ApiError && e.status === 400) {
+          const { whatWeDoKicker: _kicker, whatWeDoHeading: _heading, whatWeDoIntro: _intro, ...legacyPayload } = payload;
+          await updateContent.mutateAsync({ key: 'about', data: legacyPayload });
+          showToast('success', 'Cards saved. Section headings need backend support — defaults shown for now.');
+          navigate('/admin/pages');
+          return;
+        }
+        throw e;
+      }
       showToast('success', 'About content saved');
       navigate('/admin/pages');
-    } catch { showToast('error', 'Something went wrong'); }
+    } catch (e) {
+      showToast('error', e instanceof ApiError ? `Save failed (${e.status}): ${e.message}` : 'Something went wrong');
+    }
   };
 
   if (isLoading || !form) return <div className="h-64 animate-pulse rounded-card bg-line/40" />;
@@ -272,7 +335,29 @@ function AboutEditor() {
         <FormField label="Mission Text">
           <Textarea rows={4} value={form.missionText} onChange={(e) => set('missionText', e.target.value)} />
         </FormField>
-        <WhatWeDoEditor items={form.whatWeDoItems} onChange={(items) => set('whatWeDoItems', items)} />
+        <div className="rounded-md border border-line p-4 space-y-4">
+          <div>
+            <span className="text-sm font-medium text-ink">What RML does section</span>
+            <p className="mt-0.5 text-xs text-ink-muted">Public About page block titled “Our work in focus”. The intro line sits above the cards.</p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField label="Section kicker" hint="Small eyebrow above the heading">
+              <Input value={form.whatWeDoKicker ?? ''} onChange={(e) => set('whatWeDoKicker', e.target.value)} placeholder="What RML does" />
+            </FormField>
+            <FormField label="Section heading" hint="Large title of the section">
+              <Input value={form.whatWeDoHeading ?? ''} onChange={(e) => set('whatWeDoHeading', e.target.value)} placeholder="Our work in focus" />
+            </FormField>
+          </div>
+          <FormField label="Intro line" hint="Line shown above the cards">
+            <Input value={form.whatWeDoIntro ?? ''} onChange={(e) => set('whatWeDoIntro', e.target.value)} placeholder="The RML works on the following:" />
+          </FormField>
+          <FormField
+            label="Cards"
+            hint="Each card shows an icon, a heading (Label) and body text (Description). Up to 6 items."
+          >
+            <WhatWeDoEditor items={form.whatWeDoItems} onChange={(items) => set('whatWeDoItems', items)} max={6} />
+          </FormField>
+        </div>
         <div className="rounded-md border border-line p-4 space-y-3">
           <span className="text-sm font-medium text-ink">SEO</span>
           <FormField label="SEO Title">
@@ -295,24 +380,49 @@ function AboutEditor() {
 
 function ProgrammeEditor({ pageKey }: { pageKey: 'internship' | 'visiting-fellowship' }) {
   const navigate = useNavigate();
-  const hook = pageKey === 'internship' ? useInternshipContent : useVisitingContent;
-  const { data, isLoading } = hook();
+  // Single hook call (rules-of-hooks safe) — keyed by pageKey.
+  const { data, isLoading } = usePageContent<ProgrammePageContent>(pageKey);
   const updateContent = useUpdatePageContent();
   const [form, setForm] = useState<ProgrammePageContent | null>(null);
-  const [heroFile, setHeroFile] = useState<File | null>(null);
 
-  useEffect(() => { if (data) setForm(data); }, [data]);
+  // Reset + normalize whenever the backend payload or pageKey changes.
+  // Keeps unsaved edits on background refetch, but swaps content on pageKey switch.
+  useEffect(() => {
+    if (data) {
+      setForm((prev) => {
+        if (prev && prev.slug === pageKey) return prev;
+        return normalizeProgrammeContent(data, pageKey);
+      });
+    }
+  }, [data, pageKey]);
 
   const set = <K extends keyof ProgrammePageContent>(key: K, val: ProgrammePageContent[K]) => setForm((f) => f ? { ...f, [key]: val } : f);
 
   const handleSave = async () => {
     if (!form) return;
+    const eligibilityItems = (form.eligibilityItems ?? []).map((s) => s.trim()).filter(Boolean);
+    const howToApplySteps = (form.howToApplySteps ?? []).map((s) => s.trim()).filter(Boolean);
+    if (!form.overviewText.trim()) {
+      showToast('error', 'Overview text is required');
+      return;
+    }
+    if (eligibilityItems.length === 0) {
+      showToast('error', 'Add at least one eligibility item');
+      return;
+    }
+    if (howToApplySteps.length === 0) {
+      showToast('error', 'Add at least one how-to-apply step');
+      return;
+    }
+    if (!form.ctaLabel.trim() || !form.ctaUrl.trim()) {
+      showToast('error', 'CTA label and URL are required');
+      return;
+    }
     try {
-      let heroImageUrl = form.heroImageUrl;
-      if (heroFile) {
-        heroImageUrl = (await uploadMediaFile(heroFile, heroFile.name, 'pages')).url;
-      }
-      await updateContent.mutateAsync({ key: pageKey, data: { ...form, heroImageUrl } });
+      await updateContent.mutateAsync({
+        key: pageKey,
+        data: { ...form, slug: pageKey, eligibilityItems, howToApplySteps },
+      });
       showToast('success', `${PAGE_LABELS[pageKey]} content saved`);
       navigate('/admin/pages');
     } catch { showToast('error', 'Something went wrong'); }
@@ -323,32 +433,38 @@ function ProgrammeEditor({ pageKey }: { pageKey: 'internship' | 'visiting-fellow
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <BackButton to="/admin/pages" label="Back to pages" />
-      <h1 className="text-2xl font-semibold text-ink">Edit: {PAGE_LABELS[pageKey]}</h1>
+      <div>
+        <h1 className="text-2xl font-semibold text-ink">Edit: {PAGE_LABELS[pageKey]}</h1>
+        <p className="mt-1 text-sm text-ink-muted">
+          {pageKey === 'internship'
+            ? 'Public page: /programmes/internship — overview, eligibility, how-to-apply and contact CTA.'
+            : 'Public page: /programmes/visiting-fellowship — overview, eligibility, how-to-apply and contact CTA.'}
+        </p>
+      </div>
       <div className="rounded-card border border-line bg-white p-6 space-y-5">
-        <FormField label="Hero Image">
-          <ImageUpload value={form.heroImageUrl} onChange={(url) => set('heroImageUrl', url)} onFile={setHeroFile} />
-        </FormField>
-        <FormField label="Overview Text">
-          <Textarea rows={4} value={form.overviewText} onChange={(e) => set('overviewText', e.target.value)} />
+        <FormField label="Overview Text" required hint="Shown under the page heading. Press Enter for line breaks">
+          <Textarea rows={6} value={form.overviewText} onChange={(e) => set('overviewText', e.target.value)} />
         </FormField>
         <RepeatableList
           items={form.eligibilityItems}
           onChange={(items) => set('eligibilityItems', items)}
           label="Eligibility Items"
           placeholder="e.g. PhD students, NGO workers..."
+          hint="Each item shows as a bullet with a check icon on the public page"
         />
         <RepeatableList
           items={form.howToApplySteps}
           onChange={(items) => set('howToApplySteps', items)}
           label="How to Apply Steps"
-          placeholder="e.g. A formal application with SOP..."
+          placeholder="e.g. A formal application with SOP (two pages)..."
+          hint="Each step shows as a numbered item, including fee details as the last step"
         />
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormField label="CTA Label">
-            <Input value={form.ctaLabel} onChange={(e) => set('ctaLabel', e.target.value)} />
+          <FormField label="CTA Label" required>
+            <Input value={form.ctaLabel} onChange={(e) => set('ctaLabel', e.target.value)} placeholder="e.g. Apply by email" />
           </FormField>
-          <FormField label="CTA URL">
-            <Input value={form.ctaUrl} onChange={(e) => set('ctaUrl', e.target.value)} />
+          <FormField label="CTA URL" required hint="mailto:info.rml.org@gmail.com or https://...">
+            <Input value={form.ctaUrl} onChange={(e) => set('ctaUrl', e.target.value)} placeholder="mailto:info.rml.org@gmail.com" />
           </FormField>
         </div>
         <div className="rounded-md border border-line p-4 space-y-3">

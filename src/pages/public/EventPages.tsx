@@ -5,7 +5,7 @@ import type { Event } from '@/lib/types';
 import { usePublishedEvents } from '@/lib/hooks';
 import { EventCard } from '@/components/EventCard';
 import { Hero } from '@/components/Hero';
-import { SectionHeading, EmptyState, Skeleton, Badge } from '@/components/ui/primitives';
+import { SectionHeading, EmptyState, Skeleton, Badge, DetailHeader } from '@/components/ui/primitives';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { RichText } from '@/components/ui/RichText';
 import { formatDate } from '@/lib/utils';
@@ -142,13 +142,27 @@ export function EventDetailPage() {
 
   return (
     <>
-      <div className="relative">
-        <OptimizedImage src={event.coverImageUrl} alt="" priority ratio="16/9" className="absolute inset-0 h-full w-full" />
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/55 to-primary/30" />
-        <div className="container-content relative flex min-h-[420px] flex-col justify-end pb-14 pt-24">
-          <div className="max-w-2xl">
-            <div className="mb-3 flex flex-wrap gap-2">
-              <Badge tone={isPast ? 'neutral' : 'accent'}>
+      <div className="container-content pt-8 lg:pt-12">
+        <Link to="/events" className="mb-6 inline-flex items-center gap-1 text-sm text-primary hover:text-accent">
+          <ArrowLeft className="h-3.5 w-3.5" /> All events
+        </Link>
+
+        {/* Cover image on top — full-width 16:9, no overlaid text */}
+        <div className="overflow-hidden rounded-card shadow-card">
+          <OptimizedImage
+            src={event.coverImageUrl}
+            alt={event.title}
+            ratio="16/9"
+            priority
+            className="w-full"
+          />
+        </div>
+
+        {/* Header separated out below the image, before the description */}
+        <DetailHeader
+          eyebrow={
+            <div className="flex flex-wrap gap-2">
+              <Badge tone={isPast ? 'neutral' : 'accentSolid'}>
                 {isPast ? 'Past event' : 'Upcoming'}
               </Badge>
               <Badge tone="neutral">
@@ -158,21 +172,17 @@ export function EventDetailPage() {
                 </span>
               </Badge>
             </div>
-            <h1 className="text-3xl text-white sm:text-4xl">{event.title}</h1>
-            <p className="mt-3 text-lg text-accent-200">{event.theme}</p>
-          </div>
-        </div>
+          }
+          title={event.title}
+          sub={event.theme}
+        />
       </div>
 
       <div className="container-content py-12 lg:py-16">
-        <Link to="/events" className="mb-8 inline-flex items-center gap-1 text-sm text-primary hover:text-accent">
-          <ArrowLeft className="h-3.5 w-3.5" /> All events
-        </Link>
-
         <div className="grid gap-10 lg:grid-cols-[1fr_320px]">
           <div>
-            <div className="max-w-prose">
-              <RichText html={event.description} />
+            <div>
+              <RichText html={event.description} className="max-w-none" />
             </div>
 
             {/* Panelists */}

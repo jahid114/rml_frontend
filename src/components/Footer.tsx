@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Linkedin, Youtube, Instagram, Twitter, MessageCircle } from 'lucide-react';
 import { useSiteSettings } from '@/lib/hooks';
@@ -18,6 +19,8 @@ const FOOTER_NAV = [
   { key: 'research', to: '/research' },
   { key: 'publications', to: '/publications' },
   { key: 'events', to: '/events' },
+  { key: 'internship', to: '/programmes/internship' },
+  { key: 'visiting-fellowship', to: '/programmes/visiting-fellowship' },
   { key: 'join', to: '/join' },
   { key: 'contact', to: '/contact' },
 ];
@@ -28,17 +31,34 @@ export function Footer() {
   const labelFor = (key: string) =>
     labels[key] ?? key.charAt(0).toUpperCase() + key.slice(1).replace(/-/g, ' ');
 
+  // Use the same logo rendering as the header (Navbar). The uploaded logo
+  // already has a dark background with white text, so no invert filter —
+  // the previous `brightness-0 invert` turned it into a solid white box.
+  const logoUrl = settings?.logoUrl;
+  const [logoError, setLogoError] = useState(false);
+  useEffect(() => {
+    setLogoError(false);
+  }, [logoUrl]);
+  const showLogo = Boolean(logoUrl) && !logoError;
+
   return (
     <footer className="border-t border-white/10 bg-primary text-white">
       <div className="container-content py-16">
         <div className="grid gap-12 md:grid-cols-[1.4fr_.7fr_.9fr]">
           <div>
-            <div className="mb-3 flex items-center gap-3">
-              {settings?.logoUrl && (
-                <img src={settings.logoUrl} alt="RML logo" className="h-10 w-auto brightness-0 invert" />
+            <Link to="/" className="mb-3 flex items-center gap-3" aria-label="RML home">
+              {showLogo ? (
+                <img
+                  src={logoUrl}
+                  alt="RML logo"
+                  className="h-10 w-auto rounded"
+                  onError={() => setLogoError(true)}
+                />
+              ) : (
+                <span className="font-serif text-2xl text-white">RML</span>
               )}
-              <span className="font-serif text-xl">Refugee &amp; Migration Lab</span>
-            </div>
+              <span className="font-serif text-xl">Refugee and Migration Lab</span>
+            </Link>
             <p className="text-sm leading-6 text-white/70">
               {settings?.footerText ??
                 'An interdisciplinary research collective researching people and politics across borders.'}
@@ -90,8 +110,19 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-white/10 pt-6 text-xs text-white/50">
-          &copy; {new Date().getFullYear()} Refugee and Migration Lab. All rights reserved.
+        <div className="mt-12 flex flex-col gap-2 border-t border-white/10 pt-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
+          <span>&copy; {new Date().getFullYear()} Refugee and Migration Lab. All rights reserved.</span>
+          <span>
+            Developed by{' '}
+            <a
+              href="https://github.com/jahid114"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/70 underline underline-offset-2 transition-colors hover:text-white"
+            >
+              MD Zanea Alam Jahid
+            </a>
+          </span>
         </div>
       </div>
     </footer>

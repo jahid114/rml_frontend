@@ -30,6 +30,38 @@ export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
   );
 }
 
+/**
+ * Single eyebrow/kicker token (B6): small-caps label with wide tracking.
+ * - tone "accent" for light surfaces, "gold" for dark/photo surfaces.
+ * - rule adds the short leading line used on heroes and programme headers.
+ */
+export function Eyebrow({
+  children,
+  tone = 'accent',
+  rule = false,
+  className,
+}: {
+  children: ReactNode;
+  tone?: 'accent' | 'gold';
+  rule?: boolean;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.24em]',
+        tone === 'gold' ? 'text-gold' : 'text-accent',
+        className
+      )}
+    >
+      {rule && (
+        <span className={cn('h-px w-8', tone === 'gold' ? 'bg-gold' : 'bg-accent')} aria-hidden />
+      )}
+      <span>{children}</span>
+    </div>
+  );
+}
+
 export function SectionHeading({
   eyebrow,
   title,
@@ -44,12 +76,39 @@ export function SectionHeading({
   return (
     <div className={cn('max-w-2xl', center && 'mx-auto text-center')}>
       {eyebrow && (
-        <p className="mb-2 font-sans text-sm font-semibold uppercase tracking-wider text-accent">
-          {eyebrow}
-        </p>
+        <Eyebrow className="mb-2">{eyebrow}</Eyebrow>
       )}
       <h2 className="text-2xl sm:text-3xl">{title}</h2>
       {intro && <p className="mt-3 text-ink-soft">{intro}</p>}
+    </div>
+  );
+}
+
+/**
+ * Shared detail-page header scale (events / research / publications):
+ * eyebrow row (kicker or badges), left-aligned h1, subtitle.
+ * Keeps all detail headers on one type scale with one alignment.
+ */
+export function DetailHeader({
+  eyebrow,
+  title,
+  sub,
+  subTone = 'soft',
+}: {
+  eyebrow?: ReactNode;
+  title: string;
+  sub?: string;
+  subTone?: 'soft' | 'accent';
+}) {
+  return (
+    <div className="mt-6">
+      {eyebrow && <div className="mb-4">{eyebrow}</div>}
+      <h1 className="text-left text-3xl sm:text-4xl">{title}</h1>
+      {sub && (
+        <p className={cn('mt-3 text-left text-lg', subTone === 'accent' ? 'text-accent' : 'text-ink-soft')}>
+          {sub}
+        </p>
+      )}
     </div>
   );
 }
@@ -59,14 +118,21 @@ export function Badge({
   tone = 'neutral',
 }: {
   children: ReactNode;
-  tone?: 'neutral' | 'accent' | 'primary' | 'success' | 'warning';
+  tone?: 'neutral' | 'accent' | 'primary' | 'success' | 'warning' | 'accentSolid' | 'lightSolid';
 }) {
+  // Usage rules (B7): translucent tones (neutral/accent/success/warning) on
+  // light surfaces only; `primary` anywhere; `accentSolid`/`lightSolid` are
+  // the ONLY tones permitted over photos (translucents wash out on images).
   const tones: Record<string, string> = {
     neutral: 'bg-primary/10 text-primary',
     accent: 'bg-accent/15 text-accent-700',
     primary: 'bg-primary text-white',
     success: 'bg-green-100 text-green-800',
     warning: 'bg-amber-100 text-amber-800',
+    // Solid chips for use over photos (event cards / detail banners) where the
+    // translucent tones wash out and fail contrast.
+    accentSolid: 'bg-accent text-white shadow-md',
+    lightSolid: 'bg-white/95 text-primary shadow-md',
   };
   return (
     <span

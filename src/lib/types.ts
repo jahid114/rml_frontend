@@ -16,9 +16,14 @@ export const ROLE_GROUPS: { group: string; roles: Role[] }[] = [
   { group: 'Research Fellows', roles: ['research-fellow'] },
   { group: 'Research Associates', roles: ['research-associate'] },
   { group: 'Researchers', roles: ['researcher'] },
+];
+
+export const ASSISTANT_GROUPS: { group: string; roles: Role[] }[] = [
   { group: 'Research Assistants (Full-Time)', roles: ['research-assistant-full-time'] },
   { group: 'Research Assistants (Part-Time)', roles: ['research-assistant-part-time'] },
 ];
+
+export const ASSISTANTS_ROLES: Role[] = ASSISTANT_GROUPS.flatMap((g) => g.roles);
 
 export const FELLOWS_ROLES: Role[] = ['non-resident-fellow'];
 export const AFFILIATES_ROLES: Role[] = ['research-affiliate'];
@@ -183,6 +188,10 @@ export interface AboutContent {
   heroImageUrl: string;
   introText: string;
   missionText: string;
+  /** "What RML does" section — all admin-configurable, with public fallbacks. */
+  whatWeDoKicker?: string;
+  whatWeDoHeading?: string;
+  whatWeDoIntro?: string;
   whatWeDoItems: WhatWeDoItem[];
   seoTitle?: string;
   seoDescription?: string;
@@ -190,7 +199,8 @@ export interface AboutContent {
 
 export interface ProgrammePageContent {
   slug: 'internship' | 'visiting-fellowship';
-  heroImageUrl: string;
+  /** No longer used — kept optional so older API payloads still parse. */
+  heroImageUrl?: string;
   overviewText: string;
   eligibilityItems: string[];
   howToApplySteps: string[];

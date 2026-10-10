@@ -1039,7 +1039,7 @@ export const seedHomeContent: HomeContent = {
   heroSlides: [
     {
       imageUrl: '/images/site/hero-rohingya-camps.jpg',
-      eyebrow: 'Refugee & Migration Lab',
+      eyebrow: 'Refugee and Migration Lab',
       title: 'Researching people and politics across borders',
       description:
         'An international, interdisciplinary research collective fostering cutting-edge research and knowledge exchange among leading scholars in refugee, migration, and forced displacement studies.',
@@ -1115,26 +1115,39 @@ export const seedAboutContent: AboutContent = {
     'The Refugee and Migration Lab (RML) is an international, interdisciplinary research collective that fosters cutting-edge research and knowledge exchange among leading scholars in the fields of refugee, migration, and forced displacement studies.',
   missionText:
     'In response to the growing refugee crisis and the multifaceted challenges of migration, RML brings together scholars, practitioners, and policymakers from a wide range of academic disciplines\u2014including anthropology, sociology, political science, law, geography, gender studies, peace and conflict, public health, and environmental studies\u2014to foster rich, cross-sectoral dialogue and collaboration. RML welcomes applications year-round from individuals affiliated with universities, research institutes, NGOs, research wings, research divisions of international organisations, or those working independently as researchers.',
+  whatWeDoKicker: 'What RML does',
+  whatWeDoHeading: 'Our work in focus',
+  whatWeDoIntro: 'The RML works on the following:',
   whatWeDoItems: [
     {
       icon: 'Globe',
-      label: 'Multidisciplinary dialogue',
-      text: 'We convene scholars across disciplines to address displacement from multiple angles.',
-    },
-    {
-      icon: 'Scale',
-      label: 'Rights-based research',
-      text: 'We produce research that informs protection, policy, and justice for displaced people.',
+      label: 'Empirically grounded research',
+      text: 'Conducting intensive and empirically grounded research',
     },
     {
       icon: 'Users',
-      label: 'Community-centered',
-      text: 'We work with affected communities as collaborators, not only as subjects.',
+      label: 'Scholarly collaboration',
+      text: 'Building collaboration with refugee and migration scholars, schools and institutions',
+    },
+    {
+      icon: 'GraduationCap',
+      label: 'Training and education',
+      text: 'Offering training, education and on forced displacement, refugee and migration studies',
     },
     {
       icon: 'Megaphone',
-      label: 'Public engagement',
-      text: 'We translate findings into public events, publications, and accessible commentary.',
+      label: 'Seminars and conferences',
+      text: 'Organising seminar series, talks, symposiums, conferences, and workshops',
+    },
+    {
+      icon: 'Scale',
+      label: 'Publications',
+      text: 'Publishing monographs, edited volumes, and policy papers on refugee and migration',
+    },
+    {
+      icon: 'Users',
+      label: 'Internships and visiting scholarships',
+      text: 'Offering internships and visiting scholarships in forced displacement, refugee and migration studies',
     },
   ],
 };
@@ -1147,7 +1160,7 @@ export const seedInternshipContent: ProgrammePageContent = {
   slug: 'internship',
   heroImageUrl: '/images/site/hero-rohingya-camps.jpg',
   overviewText:
-    'The Refugee and Migration Lab (RML) is seeking passionate, dedicated, and socially conscious individuals from across the globe who are eager to contribute fresh perspectives, lived experiences, and innovative thinking to the field of refugee, migration and forced displacement. The RML\u2019s Internship Programme offers a transformative learning experience for eligible students, recent graduates, NGO workers and independent researchers. Through this opportunity, interns will actively participate in field-based research, working directly within the Rohingya refugee camps situated in the borderland region between Bangladesh and Myanmar under the supervision of highly trained professional researchers at RML.',
+    'The Refugee and Migration Lab (RML) is seeking passionate, dedicated, and socially conscious individuals from across the globe who are eager to contribute fresh perspectives, lived experiences, and innovative thinking to the field of refugee, migration and forced displacement.\n\nThe RML\u2019s Internship Programme offers a transformative learning experience for eligible students, recent graduates, NGO workers and independent researchers. Through this opportunity, interns will actively participate in field-based research, working directly within the Rohingya refugee camps situated in the borderland region between Bangladesh and Myanmar under the supervision of highly trained professional researchers at RML.',
   eligibilityItems: [
     'Post-graduate students, M.Phil. Students, PhD Students, NGO workers, freelance researchers, affiliates of any research organisations',
     'Commitment to deepening the global understanding of the complex realities faced by refugees, forcibly displaced persons, \u2018stateless\u2019 people and undocumented migrants',
@@ -1172,7 +1185,7 @@ export const seedVisitingContent: ProgrammePageContent = {
   slug: 'visiting-fellowship',
   heroImageUrl: '/images/site/hero-humanitarian-aid.jpg',
   overviewText:
-    'Visiting Fellowships at the Refugee and Migration Lab (RML) are open to professional academics, post-doctoral scholars, independent non-academic researchers, NGO workers, freelance researchers, affiliates of any research organisations, and PhD students from around the world who are researching aspects of forced displacement, refugees, migration, mobility, borders, and South Asia, particularly Bangladesh. The primary purpose of the Visiting Fellowship programme is to enhance the academic work (research and collaboration) of the RML through mutual exchange and learning. The Visiting Fellowship period must be no less than three months and no longer than one year.',
+    'Visiting Fellowships at the Refugee and Migration Lab (RML) are open to professional academics, post-doctoral scholars, independent non-academic researchers, NGO workers, freelance researchers, affiliates of any research organisations, and PhD students from around the world who are researching aspects of forced displacement, refugees, migration, mobility, borders, and South Asia, particularly Bangladesh.\n\nThe primary purpose of the Visiting Fellowship programme is to enhance the academic work (research and collaboration) of the RML through mutual exchange and learning. The Visiting Fellowship period must be no less than three months and no longer than one year.',
   eligibilityItems: [
     'Professional academics, post-doctoral scholars, independent non-academic researchers, NGO workers, freelance researchers, affiliates of any research organisations, and PhD students',
     'Research focus on forced displacement, refugees, migration, mobility, borders, and South Asia, particularly Bangladesh',
@@ -1216,8 +1229,8 @@ export const DEFAULT_BRAND_COLORS = {
 };
 
 export const seedSettings: SiteSettings = {
-  logoUrl: '/images/site/rml-logo.png',
-  faviconUrl: '/images/site/rml-logo.png',
+  logoUrl: '/rml-logo.svg',
+  faviconUrl: '/favicon.svg',
   ...DEFAULT_BRAND_COLORS,
   navLabels: {
     home: 'Home',
@@ -1226,6 +1239,9 @@ export const seedSettings: SiteSettings = {
     research: 'Research',
     publications: 'Publications',
     events: 'Events & News',
+    programmes: 'Programmes',
+    internship: 'Internship Programme',
+    'visiting-fellowship': 'Visiting Fellowship',
     join: 'Join',
     contact: 'Contact',
   },

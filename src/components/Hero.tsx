@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { ArrowRight } from 'lucide-react';
+import { Eyebrow } from './ui/primitives';
 
 export function Hero({
   image,
@@ -22,13 +23,15 @@ export function Hero({
       </div>
       <div className='slider-overlay absolute inset-0' />
       <div className='absolute inset-0 opacity-20 [background-image:linear-gradient(rgba(255,255,255,.07)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.07)_1px,transparent_1px)] [background-size:80px_80px]' />
-      <div className='container-content relative flex min-h-[240px] items-end pb-10 pt-12 sm:min-h-[280px] sm:pb-12 lg:min-h-[320px] lg:pb-14'>
+      {/* Top-anchored text block: eyebrow + title sit at an identical Y on
+          every page. (Bottom-anchoring can't align titles when subhead
+          lengths vary from one line to a full paragraph, as on About.) */}
+      <div className='container-content relative flex min-h-[240px] items-start pb-10 pt-14 sm:min-h-[280px] sm:pt-16 lg:min-h-[320px] lg:pt-20'>
         <div className='max-w-3xl'>
           {eyebrow && (
-            <div className='mb-4 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.24em] text-gold'>
-              <span className='h-px w-8 bg-gold' />
+            <Eyebrow tone="gold" rule className="mb-4">
               {eyebrow}
-            </div>
+            </Eyebrow>
           )}
           <h1 className='max-w-2xl text-[clamp(1.625rem,3.8vw,2.5rem)] font-medium leading-[1.1] tracking-[-0.03em] text-white'>{heading}</h1>
           <p className='mt-4 max-w-xl text-sm leading-6 text-white/75 sm:text-[14px] sm:leading-6'>{subhead}</p>

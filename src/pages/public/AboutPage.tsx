@@ -3,6 +3,7 @@ import { Globe, Scale, Users, GraduationCap, Megaphone, ArrowRight, type LucideI
 import { Hero } from '@/components/Hero';
 import { SectionHeading, Skeleton } from '@/components/ui/primitives';
 import { useAboutContent, usePublishedPeople } from '@/lib/hooks';
+import { normalizeAboutContent } from '@/lib/utils';
 
 const ICONS: Record<string, LucideIcon> = {
   Globe, Scale, Users, GraduationCap, Megaphone,
@@ -22,13 +23,19 @@ export default function AboutPage() {
 
   const teamCount = people?.length ?? 0;
 
+  // Single source of truth: the pages-content API (Admin → Pages → About).
+  // normalizeAboutContent only backfills seed defaults when the API has
+  // nothing saved yet — it never overrides saved content.
+  const content = normalizeAboutContent(about);
+  const workItems = content.whatWeDoItems ?? [];
+
   return (
     <>
       <Hero
-        image={about.heroImageUrl}
+        image={content.heroImageUrl}
         eyebrow="About RML"
         heading="About the RML"
-        subhead={about.introText}
+        subhead={content.introText}
       />
 
       <section className="container-content py-16 lg:py-20">
@@ -36,23 +43,24 @@ export default function AboutPage() {
           <div>
             <SectionHeading eyebrow="Who we are" title="A research collective, not a single-discipline lab" />
           </div>
-          <p className="text-lg leading-8 text-ink-soft">{about.missionText}</p>
+          <p className="text-justify text-lg leading-8 text-ink-soft">{content.missionText}</p>
         </div>
       </section>
 
       <section className="bg-white py-16 lg:py-20">
         <div className="container-content">
-          <SectionHeading eyebrow="What RML does" title="Our work in focus" center />
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {about.whatWeDoItems.map((item, i) => {
+          <SectionHeading eyebrow={content.whatWeDoKicker || 'What RML does'} title={content.whatWeDoHeading || 'Our work in focus'} center />
+          <p className="mt-6 text-center text-base text-ink-soft">{content.whatWeDoIntro || 'The RML works on the following:'}</p>
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {workItems.map((item, i) => {
               const Icon = ICONS[item.icon] ?? Globe;
               return (
                 <div key={i} className="rounded-card border border-line bg-canvas p-6">
                   <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-accent/10 text-accent">
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="text-base">{item.label}</h3>
-                  <p className="mt-2 text-sm text-ink-soft">{item.text}</p>
+                  {Boolean(item.label) && <h3 className="text-base">{item.label}</h3>}
+                  <p className="mt-2 text-sm leading-6 text-ink-soft">{item.text}</p>
                 </div>
               );
             })}

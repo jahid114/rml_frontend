@@ -8,7 +8,7 @@ export function PublicLayout() {
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
-      <main className="flex-1">
+      <main className="site-content flex-1">
         <Outlet />
       </main>
       <Footer />

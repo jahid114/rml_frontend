@@ -12,6 +12,7 @@ export function PersonCard({ person }: { person: Person }) {
           src={person.photoUrl}
           alt={person.name}
           ratio="square"
+          align="top"
           className="rounded-t-card"
         />
       </Link>

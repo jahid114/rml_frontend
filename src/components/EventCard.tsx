@@ -19,19 +19,19 @@ export function EventCard({ event }: { event: Event }) {
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-card bg-white shadow-card transition-shadow hover:shadow-cardhover">
-      <Link to={`/events/${event.slug}`} className="relative block">
+      <Link to={`/events/${event.slug}`} className="relative block w-full">
         <OptimizedImage
           src={event.coverImageUrl}
           alt={event.title}
           ratio="16/9"
-          className="rounded-t-card"
+          className="w-full rounded-t-card"
         />
         <div className="absolute left-3 top-3 flex h-14 w-14 flex-col items-center justify-center rounded-md bg-white shadow-card">
           <span className="text-lg font-bold leading-none text-primary">{day}</span>
           <span className="text-xs font-medium uppercase text-accent">{month}</span>
         </div>
         <div className="absolute right-3 top-3">
-          <Badge tone={isPast ? 'neutral' : 'accent'}>
+          <Badge tone={isPast ? 'lightSolid' : 'accentSolid'}>
             {isPast ? 'Past' : 'Upcoming'}
           </Badge>
         </div>

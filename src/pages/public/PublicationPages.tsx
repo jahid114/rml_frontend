@@ -6,7 +6,7 @@ import { PUBLICATION_TYPE_LABELS } from '@/lib/types';
 import { usePublishedPublications } from '@/lib/hooks';
 import { PublicationCard } from '@/components/PublicationCard';
 import { Hero } from '@/components/Hero';
-import { EmptyState, Skeleton, Badge } from '@/components/ui/primitives';
+import { EmptyState, Skeleton, Badge, DetailHeader } from '@/components/ui/primitives';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { RichText } from '@/components/ui/RichText';
 
@@ -117,37 +117,32 @@ export function PublicationDetailPage() {
 
   return (
     <>
-      <Hero
-        image={pub.coverImageUrl}
-        eyebrow={PUBLICATION_TYPE_LABELS[pub.type]}
-        heading={pub.title}
-        subhead={pub.authors.join(', ')}
-      />
       <div className="container-content py-12 lg:py-16">
         <Link to="/publications" className="mb-8 inline-flex items-center gap-1 text-sm text-primary hover:text-accent">
           <ArrowLeft className="h-3.5 w-3.5" /> All publications
         </Link>
         <div className="grid gap-10 lg:grid-cols-[300px_1fr]">
-          <div className="lg:sticky lg:top-24">
+          <div className="lg:sticky lg:top-24 lg:self-start">
             <OptimizedImage src={pub.coverImageUrl} alt={`Cover of ${pub.title}`} ratio="2/3" className="rounded-card shadow-card" />
             <div className="mt-4 space-y-2">
               <Badge tone="accent">{PUBLICATION_TYPE_LABELS[pub.type]}</Badge>
               <p className="text-sm text-ink-muted">Published {pub.year}</p>
-              <a
-                href={pub.externalUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-md bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-600"
-              >
-                View / purchase <ExternalLink className="h-4 w-4" />
-              </a>
+              {pub.externalUrl.trim() && (
+                <a
+                  href={pub.externalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-md bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-accent-600"
+                >
+                  View / purchase <ExternalLink className="h-4 w-4" />
+                </a>
+              )}
             </div>
           </div>
           <div>
-            <h1 className="text-3xl sm:text-4xl">{pub.title}</h1>
-            <p className="mt-3 text-lg text-accent">{pub.authors.join(', ')}</p>
+            <DetailHeader title={pub.title} sub={pub.authors.join(', ')} subTone="accent" />
             <div className="mt-6">
-              <RichText html={pub.description} />
+              <RichText html={pub.description} className="max-w-none" />
             </div>
           </div>
         </div>

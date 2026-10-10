@@ -4,7 +4,7 @@ import { GallerySlider, type GallerySlide } from '@/components/GallerySlider';
 import { useFeaturedJob, useHomeContent, useSiteSettings, useUpcomingEvents } from '@/lib/hooks';
 import { normalizeHomeContent } from '@/lib/utils';
 import { formatDate } from '@/lib/utils';
-import { Skeleton } from '@/components/ui/primitives';
+import { Skeleton, Eyebrow } from '@/components/ui/primitives';
 
 const ICONS: Record<string, LucideIcon> = { Globe: Globe2, Scale, Users, GraduationCap, Megaphone };
 
@@ -57,12 +57,12 @@ export default function HomePage() {
         <div className='absolute -right-32 top-12 h-80 w-80 rounded-full border border-accent/20' />
         <div className='container-content grid gap-12 lg:grid-cols-[.75fr_1.25fr] lg:gap-24'>
           <div>
-            <p className='section-kicker'>{content.purposeKicker}</p>
+            <Eyebrow>{content.purposeKicker}</Eyebrow>
             <p className='mt-6 font-serif text-2xl leading-snug text-primary sm:text-3xl'>{content.purposeQuote}</p>
           </div>
           <div>
             <h2 className='text-3xl leading-tight sm:text-4xl lg:text-5xl'>{content.purposeHeading}</h2>
-            <p className='mt-7 text-base leading-8 text-ink-soft sm:text-lg'>{content.missionText}</p>
+            <p className='mt-7 text-justify text-base leading-8 text-ink-soft sm:text-lg'>{content.missionText}</p>
             <Link to='/about' className='group mt-8 inline-flex items-center gap-3 text-sm font-semibold text-primary'>{content.purposeCtaLabel} <span className='flex h-9 w-9 items-center justify-center rounded-full border border-primary/30 transition group-hover:bg-primary group-hover:text-white'><ArrowRight className='h-4 w-4' /></span></Link>
           </div>
         </div>
@@ -71,7 +71,7 @@ export default function HomePage() {
       <section className='bg-primary py-20 text-white sm:py-28'>
         <div className='container-content'>
           <div className='grid gap-8 border-b border-white/15 pb-12 lg:grid-cols-2 lg:items-end'>
-            <div><p className='section-kicker text-gold'>{content.whatWeDoKicker}</p><h2 className='mt-5 text-3xl text-white sm:text-5xl'>{content.whatWeDoHeading}</h2></div>
+            <div><Eyebrow tone="gold">{content.whatWeDoKicker}</Eyebrow><h2 className='mt-5 text-3xl text-white sm:text-5xl'>{content.whatWeDoHeading}</h2></div>
             <p className='max-w-xl text-base leading-7 text-white/65 lg:justify-self-end'>{content.whatWeDoIntro}</p>
           </div>
           <div className='grid sm:grid-cols-2 lg:grid-cols-4'>
@@ -89,7 +89,7 @@ export default function HomePage() {
       <section className='py-20 sm:py-28'>
         <div className='container-content'>
           <div className='flex flex-col justify-between gap-5 sm:flex-row sm:items-end'>
-            <div><p className='section-kicker'>{content.eventsKicker}</p><h2 className='mt-4 text-3xl sm:text-5xl'>{content.eventsHeading}</h2></div>
+            <div><Eyebrow>{content.eventsKicker}</Eyebrow><h2 className='mt-4 text-3xl sm:text-5xl'>{content.eventsHeading}</h2></div>
             <Link to='/events' className='inline-flex items-center gap-2 text-sm font-semibold text-primary'>{content.eventsLinkLabel} <ArrowRight className='h-4 w-4' /></Link>
           </div>
           <div className='mt-12 grid gap-6 lg:grid-cols-[1.35fr_.65fr]'>
@@ -112,7 +112,7 @@ export default function HomePage() {
 
       <section className='border-y border-line bg-white py-16'>
         <div className='container-content flex flex-col items-center justify-between gap-8 text-center lg:flex-row lg:text-left'>
-          <div><p className='section-kicker'>{content.connectKicker}</p><h2 className='mt-3 text-2xl sm:text-3xl'>{content.connectHeading}</h2></div>
+          <div><Eyebrow>{content.connectKicker}</Eyebrow><h2 className='mt-3 text-2xl sm:text-3xl'>{content.connectHeading}</h2></div>
           <div className='flex flex-wrap justify-center gap-2'>{settings?.socialLinks?.map((social) => <a key={social.platform + social.url} href={social.url} target='_blank' rel='noreferrer' className='rounded-full border border-line px-5 py-2.5 text-sm font-semibold text-ink-soft transition hover:border-accent hover:bg-accent hover:text-white'>{social.platform}</a>)}</div>
         </div>
       </section>

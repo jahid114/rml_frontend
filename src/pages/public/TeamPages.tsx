@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
 import { Search, ArrowRight, ExternalLink } from 'lucide-react';
 import type { Role } from '@/lib/types';
-import { ROLE_GROUPS, FELLOWS_ROLES, AFFILIATES_ROLES, ROLE_LABELS } from '@/lib/types';
+import { ROLE_GROUPS, ASSISTANT_GROUPS, ASSISTANTS_ROLES, FELLOWS_ROLES, AFFILIATES_ROLES, ROLE_LABELS } from '@/lib/types';
 import { usePublishedPeople } from '@/lib/hooks';
 import { PersonCard } from '@/components/PersonCard';
 import { Hero } from '@/components/Hero';
@@ -10,13 +10,19 @@ import { SectionHeading, EmptyState, Skeleton } from '@/components/ui/primitives
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { RichText } from '@/components/ui/RichText';
 
-type Variant = 'team' | 'fellows' | 'affiliates';
+type Variant = 'team' | 'assistants' | 'fellows' | 'affiliates';
 
 const VARIANT_CONFIG: Record<Variant, { roles: Role[]; title: string; subhead: string; image: string }> = {
   team: {
     roles: ROLE_GROUPS.flatMap((g) => g.roles),
     title: 'RML Research Team',
-    subhead: 'Our directors, fellows, associates, researchers, and assistants.',
+    subhead: 'Our directors, fellows, associates, and researchers.',
+    image: '/images/site/hero-rohingya-camps.jpg',
+  },
+  assistants: {
+    roles: ASSISTANTS_ROLES,
+    title: 'Research Assistants',
+    subhead: 'Our full-time and part-time research assistants.',
     image: '/images/site/hero-rohingya-camps.jpg',
   },
   fellows: {
@@ -35,6 +41,7 @@ const VARIANT_CONFIG: Record<Variant, { roles: Role[]; title: string; subhead: s
 
 function getVariant(slug?: string): Variant {
   if (slug === 'non-resident-fellows') return 'fellows';
+  if (slug === 'research-assistants') return 'assistants';
   if (slug === 'affiliates') return 'affiliates';
   return 'team';
 }
@@ -60,14 +67,21 @@ export function TeamListPage() {
     );
   }, [people, config.roles, query]);
 
-  // Group by role-group (only for the main team view)
+  // Group by role-group (only for the main team and assistants views)
   const groups = useMemo(() => {
-    if (variant !== 'team') return [{ group: config.title, roles: config.roles, people: filtered }];
-    return ROLE_GROUPS.map((g) => ({
-      group: g.group,
-      roles: g.roles,
-      people: filtered.filter((p) => g.roles.includes(p.role)),
-    })).filter((g) => g.people.length > 0);
+    if (variant === 'team')
+      return ROLE_GROUPS.map((g) => ({
+        group: g.group,
+        roles: g.roles,
+        people: filtered.filter((p) => g.roles.includes(p.role)),
+      })).filter((g) => g.people.length > 0);
+    if (variant === 'assistants')
+      return ASSISTANT_GROUPS.map((g) => ({
+        group: g.group,
+        roles: g.roles,
+        people: filtered.filter((p) => g.roles.includes(p.role)),
+      })).filter((g) => g.people.length > 0);
+    return [{ group: config.title, roles: config.roles, people: filtered }];
   }, [filtered, variant, config.title, config.roles]);
 
   return (
@@ -78,6 +92,7 @@ export function TeamListPage() {
         {/* Sub-nav between team views */}
         <div className="mb-8 flex flex-wrap gap-2">
           <SubNav to="/team" active={variant === 'team'}>Research Team</SubNav>
+          <SubNav to="/team/research-assistants" active={variant === 'assistants'}>Research Assistants</SubNav>
           <SubNav to="/team/non-resident-fellows" active={variant === 'fellows'}>Non-Resident Fellows</SubNav>
           <SubNav to="/team/affiliates" active={variant === 'affiliates'}>Research Affiliates</SubNav>
         </div>
@@ -171,6 +186,7 @@ export function PersonDetailPage() {
               src={person.photoUrl}
               alt={person.name}
               ratio="square"
+              align="top"
               className="rounded-card"
             />
             <div>
@@ -197,9 +213,9 @@ export function PersonDetailPage() {
       </div>
 
       <div className="container-content py-12 lg:py-16">
-        <div className="max-w-prose">
+        <div>
           {person.bio ? (
-            <RichText html={person.bio} />
+            <RichText html={person.bio} className="max-w-none" />
           ) : (
             <p className="text-ink-soft">Biography coming soon.</p>
           )}

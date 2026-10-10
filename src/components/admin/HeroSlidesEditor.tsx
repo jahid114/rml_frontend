@@ -8,6 +8,9 @@ interface HeroSlidesEditorProps {
   onChange: (slides: HeroSlide[]) => void;
   /** Receives selected files keyed by slide index; parent uploads on save. */
   onFile?: (index: number, file: File | null) => void;
+  /** Keep parent-side pending files in sync when slides are removed/reordered. */
+  onSlideRemove?: (index: number) => void;
+  onSlideMove?: (from: number, to: number) => void;
 }
 
 const EMPTY_SLIDE: HeroSlide = {
@@ -19,7 +22,7 @@ const EMPTY_SLIDE: HeroSlide = {
   ctaUrl: '',
 };
 
-export function HeroSlidesEditor({ slides, onChange, onFile }: HeroSlidesEditorProps) {
+export function HeroSlidesEditor({ slides, onChange, onFile, onSlideRemove, onSlideMove }: HeroSlidesEditorProps) {
   const safeSlides = Array.isArray(slides) ? slides : [];
 
   const update = (i: number, patch: Partial<HeroSlide>) => {
@@ -31,6 +34,8 @@ export function HeroSlidesEditor({ slides, onChange, onFile }: HeroSlidesEditorP
   const remove = (i: number) => {
     if (safeSlides.length <= 1) return;
     onChange(safeSlides.filter((_, idx) => idx !== i));
+    onFile?.(i, null);
+    onSlideRemove?.(i);
   };
 
   const add = () => onChange([...safeSlides, { ...EMPTY_SLIDE }]);
@@ -41,6 +46,7 @@ export function HeroSlidesEditor({ slides, onChange, onFile }: HeroSlidesEditorP
     const next = [...safeSlides];
     [next[i], next[j]] = [next[j], next[i]];
     onChange(next);
+    onSlideMove?.(i, j);
   };
 
   return (
@@ -97,7 +103,7 @@ export function HeroSlidesEditor({ slides, onChange, onFile }: HeroSlidesEditorP
               <Input
                 value={slide.eyebrow}
                 onChange={(e) => update(i, { eyebrow: e.target.value })}
-                placeholder="e.g. Refugee & Migration Lab"
+                placeholder="e.g. Refugee and Migration Lab"
               />
             </FormField>
             <FormField label="CTA URL" required hint="Internal path like /about">

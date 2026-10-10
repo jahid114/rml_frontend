@@ -31,7 +31,8 @@ export function ImageUpload({
   required,
   error,
 }: ImageUploadProps) {
-  const [mode, setMode] = useState<'upload' | 'url'>(value.startsWith('http') ? 'url' : 'upload');
+  const safeValue = value ?? '';
+  const [mode, setMode] = useState<'upload' | 'url'>(safeValue.startsWith('http') ? 'url' : 'upload');
   const [dragOver, setDragOver] = useState(false);
   const [fileError, setFileError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -124,9 +125,9 @@ export function ImageUpload({
     setFileError('');
   }, [clearFile, onChange]);
 
-  const isDataUrl = value.startsWith('data:');
-  const isHttpUrl = value.startsWith('http');
-  const displaySrc = previewUrl ?? (value || null);
+  const isDataUrl = safeValue.startsWith('data:');
+  const isHttpUrl = safeValue.startsWith('http');
+  const displaySrc = previewUrl ?? (safeValue || null);
   const hasImage = !!displaySrc;
 
   return (
@@ -217,7 +218,7 @@ export function ImageUpload({
         <input
           ref={urlInputRef}
           type="url"
-          value={isHttpUrl ? value : ''}
+          value={isHttpUrl ? safeValue : ''}
           onChange={(e) => { setFileError(''); onChange(e.target.value); }}
           placeholder="https://example.com/image.jpg"
           className="w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-muted/50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -228,7 +229,7 @@ export function ImageUpload({
 
       {hasImage && mode === 'url' && (
         <div className="flex items-center gap-2">
-          <img src={value} alt="Preview" className="h-16 w-16 rounded object-cover" />
+          <img src={safeValue} alt="Preview" className="h-16 w-16 rounded object-cover" />
           <button
             type="button"
             onClick={() => { onChange(''); setFileError(''); }}

@@ -153,6 +153,9 @@ export const aboutContentSchema = z.object({
   heroImageUrl: z.string().min(1, 'Hero image required'),
   introText: z.string().min(1, 'Intro required'),
   missionText: z.string().min(1, 'Mission text required'),
+  whatWeDoKicker: z.string().optional(),
+  whatWeDoHeading: z.string().optional(),
+  whatWeDoIntro: z.string().optional(),
   whatWeDoItems: z.array(whatWeDoItemSchema).max(6, 'Maximum 6 items'),
   seoTitle: z.string().optional(),
   seoDescription: z.string().optional(),
@@ -160,7 +163,7 @@ export const aboutContentSchema = z.object({
 
 export const programmePageContentSchema = z.object({
   slug: z.enum(['internship', 'visiting-fellowship']),
-  heroImageUrl: z.string().min(1, 'Hero image required'),
+  heroImageUrl: z.string().optional(),
   overviewText: z.string().min(1, 'Overview required'),
   eligibilityItems: z.array(z.string()).min(1, 'At least one eligibility item'),
   howToApplySteps: z.array(z.string()).min(1, 'At least one step'),

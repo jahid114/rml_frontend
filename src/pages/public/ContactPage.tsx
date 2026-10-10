@@ -107,9 +107,9 @@ export default function ContactPage() {
             <section>
               <SectionHeading eyebrow="Message" title="Send us a note" />
               {submitted ? (
-                <div className="mt-6 rounded-card border border-green-200 bg-green-50 p-6 text-green-800">
-                  <p className="font-medium">Thank you for your message.</p>
-                  <p className="mt-1 text-sm">
+                <div className="mt-6 rounded-card border border-line bg-white p-6 shadow-card">
+                  <p className="font-medium text-ink">Thank you for your message.</p>
+                  <p className="mt-1 text-sm text-ink-soft">
                     Your note has been sent to the RML team — we aim to respond within a week.
                   </p>
                 </div>

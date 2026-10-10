@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useEditor, EditorContent, type Editor } from '@tiptap/react';
+import { Mark } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -25,6 +26,62 @@ interface RichTextEditorProps {
   onChange: (html: string) => void;
   placeholder?: string;
   className?: string;
+}
+
+// Word-like text sizing. Stored as <span data-size="small|large|xl"> (never
+// inline styles, so sanitizeHtml preserves it) and rendered by the
+// `.prose-rml [data-size]` rules — identical scale in admin and public.
+const FontSize = Mark.create({
+  name: 'fontSize',
+  addAttributes() {
+    return {
+      size: {
+        default: null,
+        parseHTML: (element) => element.getAttribute('data-size'),
+        renderHTML: (attributes) => {
+          if (!attributes.size) return {};
+          return { 'data-size': attributes.size };
+        },
+      },
+    };
+  },
+  parseHTML() {
+    return [{ tag: 'span[data-size]' }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ['span', HTMLAttributes, 0];
+  },
+});
+
+const FONT_SIZES = [
+  { value: '', label: 'Normal' },
+  { value: 'small', label: 'Small' },
+  { value: 'large', label: 'Large' },
+  { value: 'xl', label: 'Extra large' },
+] as const;
+
+function FontSizeControl({ editor }: { editor: Editor }) {
+  const current =
+    FONT_SIZES.find((s) => s.value && editor.isActive('fontSize', { size: s.value }))?.value ?? '';
+  return (
+    <select
+      value={current}
+      onChange={(e) => {
+        const size = e.target.value;
+        if (!size) editor.chain().focus().unsetMark('fontSize').run();
+        else editor.chain().focus().setMark('fontSize', { size }).run();
+      }}
+      title="Text size"
+      aria-label="Text size"
+      className="rounded border border-line bg-white px-1.5 py-1 text-xs text-ink focus:border-primary focus:outline-none"
+    >
+      {FONT_SIZES.map((s) => (
+        <option key={s.label} value={s.value}>
+          {s.label}
+        </option>
+      ))}
+    </select>
+  );
 }
 
 function ToolbarButton({
@@ -114,13 +171,16 @@ export function RichTextEditor({ value, onChange, placeholder = 'Write something
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [2, 3] } }),
+      FontSize,
       Link.configure({ openOnClick: false }),
       Placeholder.configure({ placeholder }),
     ],
     content: value,
     editorProps: {
       attributes: {
-        class: 'prose-rml max-w-none min-h-[180px] px-3 py-2 text-sm focus:outline-none',
+        // No text-size class here: content renders at the same size as the
+        // public site so the admin preview is WYSIWYG.
+        class: 'prose-rml max-w-none min-h-[180px] px-3 py-2 focus:outline-none',
       },
     },
     onUpdate: ({ editor: e }) => onChange(e.getHTML()),
@@ -152,6 +212,7 @@ export function RichTextEditor({ value, onChange, placeholder = 'Write something
         <ToolbarButton onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} title="Strikethrough">
           <Strikethrough className="h-4 w-4" />
         </ToolbarButton>
+        <FontSizeControl editor={editor} />
         <span className="mx-1 h-5 w-px bg-line" aria-hidden />
         <ToolbarButton onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })} title="Heading 2">
           <Heading2 className="h-4 w-4" />

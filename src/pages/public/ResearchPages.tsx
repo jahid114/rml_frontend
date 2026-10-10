@@ -3,7 +3,7 @@ import { ArrowLeft } from 'lucide-react';
 import { usePublishedPublications, useResearchThemes, usePublishedPeople } from '@/lib/hooks';
 import { PublicationCard } from '@/components/PublicationCard';
 import { Hero } from '@/components/Hero';
-import { SectionHeading, EmptyState, Skeleton } from '@/components/ui/primitives';
+import { SectionHeading, EmptyState, Skeleton, DetailHeader, Eyebrow } from '@/components/ui/primitives';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { RichText } from '@/components/ui/RichText';
 
@@ -91,13 +91,32 @@ export function ResearchDetailPage() {
 
   return (
     <>
-      <Hero image={theme.coverImageUrl} eyebrow="Research" heading={theme.title} subhead={theme.summary} />
-      <div className="container-content py-12 lg:py-16">
-        <Link to="/research" className="mb-8 inline-flex items-center gap-1 text-sm text-primary hover:text-accent">
+      <div className="container-content pt-8 lg:pt-12">
+        <Link to="/research" className="mb-6 inline-flex items-center gap-1 text-sm text-primary hover:text-accent">
           <ArrowLeft className="h-3.5 w-3.5" /> All research
         </Link>
-        <div className="max-w-prose">
-          <RichText html={theme.body} />
+
+        {/* Cover image on top — full-width 16:9, no overlaid text */}
+        <div className="overflow-hidden rounded-card shadow-card">
+          <OptimizedImage
+            src={theme.coverImageUrl}
+            alt={theme.title}
+            ratio="16/9"
+            priority
+            className="w-full"
+          />
+        </div>
+
+        {/* Header separated out below the image, before the body */}
+        <DetailHeader
+          eyebrow={<Eyebrow>Research</Eyebrow>}
+          title={theme.title}
+          sub={theme.summary}
+        />
+      </div>
+      <div className="container-content py-12 lg:py-16">
+        <div>
+          <RichText html={theme.body} className="max-w-none" />
         </div>
 
         {relatedPubs.length > 0 && (
@@ -119,7 +138,7 @@ export function ResearchDetailPage() {
                   to={`/team/${p.slug}`}
                   className="flex items-center gap-3 rounded-card bg-white p-4 shadow-card transition-shadow hover:shadow-cardhover"
                 >
-                  <OptimizedImage src={p.photoUrl} alt={p.name} ratio="square" className="h-14 w-14 rounded-full" />
+                  <OptimizedImage src={p.photoUrl} alt={p.name} ratio="square" align="top" compact className="h-14 w-14 rounded-full" />
                   <div>
                     <p className="font-medium text-ink">{p.name}</p>
                     <p className="text-sm text-ink-muted">{p.title}</p>

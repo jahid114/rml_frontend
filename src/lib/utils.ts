@@ -1,7 +1,7 @@
 // Small utility helpers.
 
-import type { HomeContent } from './types';
-import { seedHomeContent } from './seed';
+import type { AboutContent, HomeContent, ProgrammePageContent } from './types';
+import { seedAboutContent, seedHomeContent, seedInternshipContent, seedVisitingContent } from './seed';
 
 export function uid(prefix = 'id'): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}${Date.now().toString(36).slice(-4)}`;
@@ -75,9 +75,16 @@ function hexToRgb(hex: string): { r: number; g: number; b: number } {
 export function sanitizeHtml(html: string): string {  if (typeof window === 'undefined') return html;
   const doc = new DOMParser().parseFromString(html, 'text/html');
   doc.querySelectorAll('script,style,iframe,object,embed').forEach((el) => el.remove());
+  // Legacy <font> tags (Word/paste junk) carry size/color — unwrap them so
+  // text falls back to the site scale instead of rendering at odd sizes.
+  doc.querySelectorAll('font').forEach((el) => el.replaceWith(...Array.from(el.childNodes)));
   doc.querySelectorAll('*').forEach((el) => {
     [...el.attributes].forEach((attr) => {
       if (/^on/i.test(attr.name)) el.removeAttribute(attr.name);
+      // Inline styles (mostly Word-paste font-size/font-family junk) would
+      // override the site type scale — drop them. Editor-controlled sizing
+      // uses data-size spans, which are preserved.
+      if (attr.name === 'style') el.removeAttribute(attr.name);
       if (attr.name === 'href' && /^\s*javascript:/i.test(attr.value)) {
         el.removeAttribute(attr.name);
       }
@@ -138,4 +145,58 @@ export function normalizeHomeContent(raw: unknown): HomeContent {
     } as HomeContent;
   }
   return { ...fallback, ...(r as unknown as Partial<HomeContent>) };
+}
+
+// Normalize programme page content (internship / visiting-fellowship):
+// backfill missing fields from seed defaults so the public page and the
+// admin editor never crash on partial API payloads.
+export function normalizeProgrammeContent(
+  raw: unknown,
+  pageKey: 'internship' | 'visiting-fellowship',
+): ProgrammePageContent {
+  const fallback = pageKey === 'internship' ? seedInternshipContent : seedVisitingContent;
+  if (!raw || typeof raw !== 'object') return fallback;
+  const r = raw as Partial<ProgrammePageContent>;
+  return {
+    slug: pageKey,
+    heroImageUrl: typeof r.heroImageUrl === 'string' ? r.heroImageUrl : fallback.heroImageUrl,
+    overviewText:
+      typeof r.overviewText === 'string' && r.overviewText ? r.overviewText : fallback.overviewText,
+    eligibilityItems:
+      Array.isArray(r.eligibilityItems) && r.eligibilityItems.length > 0
+        ? r.eligibilityItems
+        : [...fallback.eligibilityItems],
+    howToApplySteps:
+      Array.isArray(r.howToApplySteps) && r.howToApplySteps.length > 0
+        ? r.howToApplySteps
+        : [...fallback.howToApplySteps],
+    ctaLabel: typeof r.ctaLabel === 'string' && r.ctaLabel ? r.ctaLabel : fallback.ctaLabel,
+    ctaUrl: typeof r.ctaUrl === 'string' && r.ctaUrl ? r.ctaUrl : fallback.ctaUrl,
+    seoTitle: typeof r.seoTitle === 'string' ? r.seoTitle : fallback.seoTitle,
+    seoDescription: typeof r.seoDescription === 'string' ? r.seoDescription : fallback.seoDescription,
+  };
+}
+
+// Normalize about page content: backfill missing fields from seed defaults so
+// the public page and the admin editor never crash on partial API payloads
+// (e.g. payloads saved before the "What RML does" heading fields existed).
+export function normalizeAboutContent(raw: unknown): AboutContent {
+  const fallback = seedAboutContent;
+  if (!raw || typeof raw !== 'object') return fallback;
+  const r = raw as Partial<AboutContent>;
+  const text = (v: unknown, fb: string) => (typeof v === 'string' && v ? v : fb);
+  return {
+    heroImageUrl: text(r.heroImageUrl, fallback.heroImageUrl),
+    introText: text(r.introText, fallback.introText),
+    missionText: text(r.missionText, fallback.missionText),
+    whatWeDoKicker: text(r.whatWeDoKicker, fallback.whatWeDoKicker ?? ''),
+    whatWeDoHeading: text(r.whatWeDoHeading, fallback.whatWeDoHeading ?? ''),
+    whatWeDoIntro: text(r.whatWeDoIntro, fallback.whatWeDoIntro ?? ''),
+    whatWeDoItems:
+      Array.isArray(r.whatWeDoItems) && r.whatWeDoItems.length > 0
+        ? r.whatWeDoItems
+        : [...fallback.whatWeDoItems],
+    seoTitle: typeof r.seoTitle === 'string' ? r.seoTitle : fallback.seoTitle,
+    seoDescription: typeof r.seoDescription === 'string' ? r.seoDescription : fallback.seoDescription,
+  };
 }
