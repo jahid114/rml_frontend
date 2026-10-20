@@ -123,6 +123,12 @@ export function Footer() {
               MD Zanea Alam Jahid
             </a>
           </span>
+          <a
+            href="/sitemap.xml"
+            className="text-white/50 underline underline-offset-2 transition-colors hover:text-white"
+          >
+            Sitemap
+          </a>
         </div>
       </div>
     </footer>

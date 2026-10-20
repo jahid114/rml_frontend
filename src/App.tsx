@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { createHashRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { useDocumentMeta } from '@/lib/seo';
 import { AuthProvider } from '@/lib/auth';
 import { PublicLayout } from '@/app/PublicLayout';
 import RequireAuth from '@/app/RequireAuth';
@@ -35,6 +36,11 @@ import AdministratorsListPage from '@/pages/admin/AdministratorsListPage';
 import AdministratorFormPage from '@/pages/admin/AdministratorFormPage';
 import AdministratorPasswordPage from '@/pages/admin/AdministratorPasswordPage';
 import { ThemeProvider } from '@/lib/theme';
+import { migrateLegacyHashUrl } from '@/lib/hash-migrate';
+
+// Rewrite any legacy /#/… URL to its clean path BEFORE the router is created,
+// so createBrowserRouter reads the corrected pathname.
+migrateLegacyHashUrl();
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -46,17 +52,27 @@ const queryClient = new QueryClient({
   },
 });
 
-const NotFound = () => (
-  <div className='container-content py-32 text-center'>
-    <h1 className='text-3xl'>Page not found</h1>
-    <p className='mt-3 text-ink-muted'>The page you are looking for does not exist.</p>
-    <a href='/' className='mt-6 inline-block text-accent underline'>
-      Back to home
-    </a>
-  </div>
-);
+const NotFound = () => {
+  // Soft-404 mitigation: the SPA fallback returns HTTP 200 for unknown paths,
+  // so the not-found page tells crawlers not to index it.
+  useDocumentMeta({
+    title: 'Page not found',
+    description: 'The page you are looking for does not exist.',
+    robots: 'noindex, follow',
+  });
 
-const router = createHashRouter([
+  return (
+    <div className='container-content py-32 text-center'>
+      <h1 className='text-3xl'>Page not found</h1>
+      <p className='mt-3 text-ink-muted'>The page you are looking for does not exist.</p>
+      <a href='/' className='mt-6 inline-block text-accent underline'>
+        Back to home
+      </a>
+    </div>
+  );
+};
+
+const router = createBrowserRouter([
   {
     element: <PublicLayout />,
     children: [

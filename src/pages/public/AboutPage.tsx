@@ -2,8 +2,10 @@ import { Link } from 'react-router-dom';
 import { Globe, Scale, Users, GraduationCap, Megaphone, ArrowRight, type LucideIcon } from 'lucide-react';
 import { Hero } from '@/components/Hero';
 import { SectionHeading, Skeleton } from '@/components/ui/primitives';
-import { useAboutContent, usePublishedPeople } from '@/lib/hooks';
+import { useAboutContent, usePublishedPeople, useSiteSettings } from '@/lib/hooks';
 import { normalizeAboutContent } from '@/lib/utils';
+import { useDocumentMeta, DEFAULT_DESCRIPTION } from '@/lib/seo';
+import { organizationLd, webPageLd } from '@/lib/jsonld';
 
 const ICONS: Record<string, LucideIcon> = {
   Globe, Scale, Users, GraduationCap, Megaphone,
@@ -12,6 +14,17 @@ const ICONS: Record<string, LucideIcon> = {
 export default function AboutPage() {
   const { data: about, isLoading } = useAboutContent();
   const { data: people } = usePublishedPeople();
+  const { data: settings } = useSiteSettings();
+
+  useDocumentMeta({
+    title: about?.seoTitle?.trim() || 'About the RML',
+    description: about?.seoDescription?.trim() || DEFAULT_DESCRIPTION,
+    path: '/about',
+    jsonLd: [
+      organizationLd(settings),
+      webPageLd('About the RML', '/about', about?.seoDescription?.trim() || DEFAULT_DESCRIPTION),
+    ],
+  });
 
   if (isLoading || !about) {
     return (

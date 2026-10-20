@@ -2,14 +2,34 @@ import { Check, Mail, ExternalLink } from 'lucide-react';
 import { SectionHeading, Skeleton, Eyebrow } from '@/components/ui/primitives';
 import { usePageContent } from '@/lib/hooks';
 import type { ProgrammePageContent } from '@/lib/types';
+import { useDocumentMeta } from '@/lib/seo';
+import { webPageLd } from '@/lib/jsonld';
 
 const TITLES = {
   internship: 'Internship Programme',
   'visiting-fellowship': 'Visiting Fellowship',
 } as const;
 
+const DESCRIPTIONS: Record<keyof typeof TITLES, string> = {
+  internship:
+    'Apply for the RML Internship Programme and work with RML researchers on forced displacement, migration, and refugee rights.',
+  'visiting-fellowship':
+    'Apply for the RML Visiting Fellowship to spend a period of research residency with the Refugee and Migration Lab.',
+};
+
 export function ProgrammePage({ pageKey = 'internship' }: { pageKey?: 'internship' | 'visiting-fellowship' }) {
   const { data, isLoading } = usePageContent<ProgrammePageContent>(pageKey);
+
+  useDocumentMeta({
+    title: data?.seoTitle?.trim() || TITLES[pageKey],
+    description: data?.seoDescription?.trim() || DESCRIPTIONS[pageKey],
+    path: `/programmes/${pageKey}`,
+    jsonLd: webPageLd(
+      data?.seoTitle?.trim() || TITLES[pageKey],
+      `/programmes/${pageKey}`,
+      data?.seoDescription?.trim() || DESCRIPTIONS[pageKey]
+    ),
+  });
 
   if (isLoading || !data) {
     return (

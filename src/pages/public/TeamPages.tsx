@@ -9,33 +9,39 @@ import { Hero } from '@/components/Hero';
 import { SectionHeading, EmptyState, Skeleton } from '@/components/ui/primitives';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { RichText } from '@/components/ui/RichText';
+import { useDocumentMeta } from '@/lib/seo';
+import { collectionPageLd, personLd } from '@/lib/jsonld';
 
 type Variant = 'team' | 'assistants' | 'fellows' | 'affiliates';
 
-const VARIANT_CONFIG: Record<Variant, { roles: Role[]; title: string; subhead: string; image: string }> = {
+const VARIANT_CONFIG: Record<Variant, { roles: Role[]; title: string; subhead: string; image: string; path: string }> = {
   team: {
     roles: ROLE_GROUPS.flatMap((g) => g.roles),
     title: 'RML Research Team',
     subhead: 'Our directors, fellows, associates, and researchers.',
     image: '/images/site/hero-rohingya-camps.jpg',
+    path: '/team',
   },
   assistants: {
     roles: ASSISTANTS_ROLES,
     title: 'Research Assistants',
     subhead: 'Our full-time and part-time research assistants.',
     image: '/images/site/hero-rohingya-camps.jpg',
+    path: '/team/research-assistants',
   },
   fellows: {
     roles: FELLOWS_ROLES,
     title: 'Non-Resident Fellows',
     subhead: 'Fellows based at partner institutions around the world.',
     image: '/images/site/hero-humanitarian-aid.jpg',
+    path: '/team/non-resident-fellows',
   },
   affiliates: {
     roles: AFFILIATES_ROLES,
     title: 'Research Affiliates',
     subhead: 'PhD candidates and early-career affiliates connected to RML.',
     image: '/images/site/hero-rohingya-camps.jpg',
+    path: '/team/affiliates',
   },
 };
 
@@ -53,6 +59,18 @@ export function TeamListPage() {
   const config = VARIANT_CONFIG[variant];
   const { data: people, isLoading } = usePublishedPeople();
   const [query, setQuery] = useState('');
+
+  useDocumentMeta({
+    title: config.title,
+    description: config.subhead,
+    path: config.path,
+    jsonLd: collectionPageLd(
+      config.title,
+      config.path,
+      config.subhead,
+      people?.map((p) => `/team/${p.slug}`)
+    ),
+  });
 
   const filtered = useMemo(() => {
     if (!people) return [];
@@ -156,6 +174,16 @@ export function PersonDetailPage() {
   const { slug } = useParams();
   const { data: people } = usePublishedPeople();
   const person = people?.find((p) => p.slug === slug);
+
+  useDocumentMeta({
+    title: person?.name ?? 'Profile',
+    description:
+      person ? `${person.name} — ${person.title}, ${person.affiliation}.` : undefined,
+    path: `/team/${slug ?? ''}`,
+    type: 'profile',
+    robots: people && !person ? 'noindex, follow' : 'index, follow',
+    jsonLd: person ? personLd(person) : undefined,
+  });
 
   if (!people) {
     return (

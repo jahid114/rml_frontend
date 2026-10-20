@@ -9,9 +9,14 @@ import { SectionHeading, EmptyState, Skeleton, Badge, DetailHeader } from '@/com
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { RichText } from '@/components/ui/RichText';
 import { formatDate } from '@/lib/utils';
+import { useDocumentMeta } from '@/lib/seo';
+import { collectionPageLd, eventLd } from '@/lib/jsonld';
 
 const HERO_IMAGE =
   '/images/site/hero-rohingya-camps.jpg';
+
+const EVENTS_DESCRIPTION =
+  'Panel discussions, seminars, and commemorations convened by RML.';
 
 const FORMAT_LABEL: Record<Event['eventFormat'], string> = {
   'in-person': 'In-person',
@@ -23,6 +28,18 @@ export function EventsPage() {
   const { data: events, isLoading } = usePublishedEvents();
   const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming');
   const [yearFilter, setYearFilter] = useState<string>('all');
+
+  useDocumentMeta({
+    title: 'Events & News',
+    description: EVENTS_DESCRIPTION,
+    path: '/events',
+    jsonLd: collectionPageLd(
+      'Events & News',
+      '/events',
+      EVENTS_DESCRIPTION,
+      events?.map((e) => `/events/${e.slug}`)
+    ),
+  });
 
   const years = useMemo(() => {
     if (!events) return [];
@@ -117,6 +134,17 @@ export function EventDetailPage() {
   const { slug } = useParams();
   const { data: events } = usePublishedEvents();
   const event = events?.find((e) => e.slug === slug);
+
+  useDocumentMeta({
+    title: event?.title ?? 'Event',
+    description: event?.description,
+    path: `/events/${slug ?? ''}`,
+    type: 'article',
+    image: event?.coverImageUrl,
+    publishedTime: event?.startDateTimeUtc,
+    robots: events && !event ? 'noindex, follow' : 'index, follow',
+    jsonLd: event ? eventLd(event) : undefined,
+  });
 
   if (!events) {
     return (

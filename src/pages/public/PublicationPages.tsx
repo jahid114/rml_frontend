@@ -9,9 +9,14 @@ import { Hero } from '@/components/Hero';
 import { EmptyState, Skeleton, Badge, DetailHeader } from '@/components/ui/primitives';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { RichText } from '@/components/ui/RichText';
+import { useDocumentMeta } from '@/lib/seo';
+import { collectionPageLd, publicationLd } from '@/lib/jsonld';
 
 const HERO_IMAGE =
   '/images/site/hero-rohingya-camps.jpg';
+
+const PUBLICATIONS_DESCRIPTION =
+  'Books, articles, policy papers, and chapters from RML researchers.';
 
 const FILTERS: { key: PublicationType | 'all'; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -25,6 +30,18 @@ export function PublicationsPage() {
   const { data: pubs, isLoading } = usePublishedPublications();
   const [filter, setFilter] = useState<PublicationType | 'all'>('all');
   const [sort, setSort] = useState<'newest' | 'oldest'>('newest');
+
+  useDocumentMeta({
+    title: 'Publications',
+    description: PUBLICATIONS_DESCRIPTION,
+    path: '/publications',
+    jsonLd: collectionPageLd(
+      'Publications',
+      '/publications',
+      PUBLICATIONS_DESCRIPTION,
+      pubs?.map((p) => `/publications/${p.slug}`)
+    ),
+  });
 
   const filtered = useMemo(() => {
     if (!pubs) return [];
@@ -95,6 +112,16 @@ export function PublicationDetailPage() {
   const { slug } = useParams();
   const { data: pubs } = usePublishedPublications();
   const pub = pubs?.find((p) => p.slug === slug);
+
+  useDocumentMeta({
+    title: pub?.title ?? 'Publication',
+    description: pub?.description,
+    path: `/publications/${slug ?? ''}`,
+    type: 'book',
+    image: pub?.coverImageUrl,
+    robots: pubs && !pub ? 'noindex, follow' : 'index, follow',
+    jsonLd: pub ? publicationLd(pub) : undefined,
+  });
 
   if (!pubs) {
     return (

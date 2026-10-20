@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/use-auth';
 import { Button } from '@/components/ui/primitives';
+import { useDocumentMeta } from '@/lib/seo';
 
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState('');
@@ -10,6 +11,12 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  useDocumentMeta({
+    title: 'Sign in',
+    robots: 'noindex, nofollow',
+    path: '/admin/login',
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

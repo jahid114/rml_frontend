@@ -6,12 +6,29 @@ import { Hero } from '@/components/Hero';
 import { SectionHeading, EmptyState, Skeleton, DetailHeader, Eyebrow } from '@/components/ui/primitives';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { RichText } from '@/components/ui/RichText';
+import { useDocumentMeta } from '@/lib/seo';
+import { collectionPageLd, researchThemeLd } from '@/lib/jsonld';
 
 const RESEARCH_IMAGE =
   '/images/site/hero-humanitarian-aid.jpg';
 
+const RESEARCH_DESCRIPTION =
+  'RML organizes its work into interdisciplinary research streams addressing forced displacement, rights, and climate mobility.';
+
 export function ResearchPage() {
   const { data: themes, isLoading } = useResearchThemes();
+
+  useDocumentMeta({
+    title: 'Research',
+    description: RESEARCH_DESCRIPTION,
+    path: '/research',
+    jsonLd: collectionPageLd(
+      'Research',
+      '/research',
+      RESEARCH_DESCRIPTION,
+      themes?.map((t) => `/research/${t.slug}`)
+    ),
+  });
 
   return (
     <>
@@ -62,6 +79,16 @@ export function ResearchDetailPage() {
   const { data: people } = usePublishedPeople();
 
   const theme = themes?.find((t) => t.slug === slug);
+
+  useDocumentMeta({
+    title: theme?.title ?? 'Research theme',
+    description: theme?.summary,
+    path: `/research/${slug ?? ''}`,
+    type: 'article',
+    image: theme?.coverImageUrl,
+    robots: themes && !theme ? 'noindex, follow' : 'index, follow',
+    jsonLd: theme ? researchThemeLd(theme) : undefined,
+  });
 
   if (!themes) {
     return (

@@ -6,9 +6,14 @@ import { SectionHeading, EmptyState, Skeleton, Badge } from '@/components/ui/pri
 import { RichText } from '@/components/ui/RichText';
 import { useOpenJobs, useSiteSettings } from '@/lib/hooks';
 import { formatShortDate } from '@/lib/utils';
+import { useDocumentMeta } from '@/lib/seo';
+import { webPageLd } from '@/lib/jsonld';
 
 const HERO_IMAGE =
   '/images/site/hero-humanitarian-aid.jpg';
+
+const JOIN_DESCRIPTION =
+  'RML is a dynamic, interdisciplinary research collective. We welcome scholars, practitioners, and students from around the world.';
 
 /**
  * Splits a job's rich HTML description at its headings (h1/h2/h3) so sections
@@ -71,6 +76,13 @@ function JobDescription({ html }: { html: string }) {
 export default function JoinPage() {
   const { data: jobs, isLoading } = useOpenJobs();
   const { data: settings } = useSiteSettings();
+
+  useDocumentMeta({
+    title: 'Join the RML Team',
+    description: JOIN_DESCRIPTION,
+    path: '/join',
+    jsonLd: webPageLd('Join the RML Team', '/join', JOIN_DESCRIPTION),
+  });
 
   return (
     <>

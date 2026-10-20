@@ -5,6 +5,8 @@ import { useFeaturedJob, useHomeContent, useSiteSettings, useUpcomingEvents } fr
 import { normalizeHomeContent } from '@/lib/utils';
 import { formatDate } from '@/lib/utils';
 import { Skeleton, Eyebrow } from '@/components/ui/primitives';
+import { useDocumentMeta, DEFAULT_DESCRIPTION, SITE_FULL_NAME } from '@/lib/seo';
+import { organizationLd, webSiteLd } from '@/lib/jsonld';
 
 const ICONS: Record<string, LucideIcon> = { Globe: Globe2, Scale, Users, GraduationCap, Megaphone };
 
@@ -14,6 +16,13 @@ export default function HomePage() {
   const { data: events } = useUpcomingEvents();
   const { data: settings } = useSiteSettings();
   const nextEvent = events?.[0];
+
+  useDocumentMeta({
+    title: home?.seoTitle?.trim() || SITE_FULL_NAME,
+    description: home?.seoDescription?.trim() || DEFAULT_DESCRIPTION,
+    path: '/',
+    jsonLd: [organizationLd(settings), webSiteLd()],
+  });
 
   if (isLoading) return <div className='container-content py-20'><Skeleton className='h-[70vh] w-full rounded-[2rem]' /></div>;
   if (isError || !home) return (

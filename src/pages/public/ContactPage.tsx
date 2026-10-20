@@ -4,9 +4,13 @@ import { Hero } from '@/components/Hero';
 import { SectionHeading, Skeleton, Button } from '@/components/ui/primitives';
 import { useContactContent, useSiteSettings } from '@/lib/hooks';
 import { ApiError, sendContactNote } from '@/lib/client';
+import { useDocumentMeta } from '@/lib/seo';
+import { webPageLd } from '@/lib/jsonld';
 
 const HERO_IMAGE =
   '/images/site/hero-humanitarian-aid.jpg';
+
+const CONTACT_DESCRIPTION = 'Get in touch with the Refugee and Migration Lab.';
 
 export default function ContactPage() {
   const { data: contact, isLoading } = useContactContent();
@@ -15,6 +19,13 @@ export default function ContactPage() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [form, setForm] = useState({ name: '', email: '', message: '' });
+
+  useDocumentMeta({
+    title: 'Contact',
+    description: CONTACT_DESCRIPTION,
+    path: '/contact',
+    jsonLd: webPageLd('Contact', '/contact', CONTACT_DESCRIPTION),
+  });
 
   if (isLoading || !contact) {
     return (
