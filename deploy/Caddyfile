@@ -1,74 +1,50 @@
 # Caddy configuration for refugeemigrationlab.org
 #
-# Host: 195.35.23.28 (Caddy). The frontend is a static Vite build served from
-# `dist/`; the backend is a separate Hono API behind its own Caddy block.
+# Host: 195.35.23.28 (Caddy). The topology is:
 #
-# This file is a REFERENCE of the site blocks that need to exist. It is meant to
-# be merged into /etc/caddy/Caddyfile, not to replace it wholesale: the
-# `api.refugeemigrationlab.org` block already works and its upstream address is
-# NOT known from outside the box — keep that block exactly as it is.
+#     Caddy :80  -> 308 redirect to https
+#     Caddy :443 -> reverse_proxy -> nginx (serves the static Vite build)
+#     api.refugeemigrationlab.org -> reverse_proxy -> Hono API
 #
-# After editing:
+# nginx owns the static files and the SPA fallback — see deploy/nginx.conf.
+# Caddy must NOT try to serve the files itself: the root path lives on the
+# nginx side and is not known here.
+#
+# Merge the blocks below into /etc/caddy/Caddyfile, then:
 #     caddy validate --config /etc/caddy/Caddyfile
 #     systemctl reload caddy
-#
-# Before applying, confirm the real deploy path for the built frontend:
-#     ls -la /var/www/rml        # expect index.html + assets/
-#     systemctl cat caddy        # shows the active config
+
+{
+	email admin@refugeemigrationlab.org
+}
 
 # ---------------------------------------------------------------------------
-# www -> apex (301).
+# www -> apex (301 permanent).
 #
 # The apex is the canonical host used for canonical tags, og:url and the
-# sitemap. www is a CNAME to the apex, but the current default site block
-# answers www with "503 Service Unavailable" and its TLS handshake fails, so
-# crawlers and visitors that use www hit an error. Redirect instead.
+# sitemap. www is a CNAME to the apex; without this block it answers with
+# "503 Service Unavailable" and its TLS handshake fails.
+#
+# `permanent` = 308. It preserves the request method and is an explicit
+# "this is the new home" signal to search engines.
 # ---------------------------------------------------------------------------
 www.refugeemigrationlab.org {
 	redir https://refugeemigrationlab.org{uri} permanent
 }
 
 # ---------------------------------------------------------------------------
-# Public site (static SPA).
+# Public site (static SPA served by nginx).
 #
-# try_files must come BEFORE file_server. It rewrites any path that is not a
-# real file on disk to /index.html so the client-side router can resolve deep
-# links such as /team/nasir-uddin. Without it every route except "/" returns
-# 404 and only /#/… style URLs work — which is why the site could not be
-# indexed.
-#
-# The app now uses createBrowserRouter (clean URLs), so the fallback is
-# required for the site to work at all.
+# The SPA fallback (`try_files $uri $uri/ /index.html`) lives in the nginx
+# vhost — deploy/nginx.conf — because nginx is what actually serves the
+# files. Do not add `root`/`file_server` here: the deploy path is not
+# visible to Caddy and a wrong root would 404 the whole site.
 # ---------------------------------------------------------------------------
 refugeemigrationlab.org {
-	root * /var/www/rml
-
-	encode zstd gzip
-
-	try_files {path} {path}/ {path}/index.html /index.html
-	file_server
-
-	# Hashed build assets never change -> cache hard.
-	@assets path /assets/* /images/*
-	header @assets Cache-Control "public, max-age=31536000, immutable"
-
-	# index.html must never be cached, or clients keep getting stale asset refs.
-	@html path / /index.html
-	header @html Cache-Control "no-cache, no-store, must-revalidate"
-
-	header {
-		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-		X-Content-Type-Options "nosniff"
-		Referrer-Policy "strict-origin-when-cross-origin"
-		X-Frame-Options "SAMEORIGIN"
-		-Server
-	}
-
-	log {
-		output file /var/log/caddy/rml-frontend.log {
-			roll_size 10MiB
-			roll_keep 5
-		}
+	reverse_proxy 127.0.0.1:8080 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-Proto {scheme}
 	}
 }
 
@@ -76,8 +52,9 @@ refugeemigrationlab.org {
 # api.refugeemigrationlab.org
 #
 # Leave the existing block untouched — it is currently serving the Hono API
-# correctly over HTTPS. The frontend bundle calls this origin, so it MUST stay
-# on https:// (an http:// API would be blocked as mixed content by browsers).
+# correctly over HTTPS. The frontend bundle calls this origin, so it MUST
+# stay on https:// (an http:// API would be blocked as mixed content by
+# browsers).
 #
 # KEEP AS-IS, e.g.:
 #
@@ -94,12 +71,12 @@ refugeemigrationlab.org {
 # rml-api.shikhonmate.com — currently BROKEN, no longer used by the frontend.
 #
 # Its TLS handshake fails and plain HTTP answers "503 Service Unavailable",
-# so it points at a dead upstream. The frontend now uses
+# so it points at a dead upstream. The frontend uses
 # https://api.refugeemigrationlab.org instead.
 #
-# Either fix the upstream or drop this host entirely. If it is dropped, remove
-# the DNS A record for rml-api.shikhonmate.com as well, otherwise it will keep
-# resolving and returning 503 to anyone who tries it.
+# Either fix the upstream or drop this host entirely. If it is dropped,
+# remove the DNS A record for rml-api.shikhonmate.com as well, otherwise it
+# keeps resolving and answering 503 to anyone who tries it.
 #
 # rml-api.shikhonmate.com {
 #     reverse_proxy <correct-upstream>

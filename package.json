@@ -10,6 +10,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "verify:deploy": "node scripts/verify-deploy.mjs --sitemap",
     "typecheck": "tsc --noEmit -p tsconfig.app.json"
   },
   "dependencies": {

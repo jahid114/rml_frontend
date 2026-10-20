@@ -36,11 +36,6 @@ import AdministratorsListPage from '@/pages/admin/AdministratorsListPage';
 import AdministratorFormPage from '@/pages/admin/AdministratorFormPage';
 import AdministratorPasswordPage from '@/pages/admin/AdministratorPasswordPage';
 import { ThemeProvider } from '@/lib/theme';
-import { migrateLegacyHashUrl } from '@/lib/hash-migrate';
-
-// Rewrite any legacy /#/… URL to its clean path BEFORE the router is created,
-// so createBrowserRouter reads the corrected pathname.
-migrateLegacyHashUrl();
 
 const queryClient = new QueryClient({
   defaultOptions: {
