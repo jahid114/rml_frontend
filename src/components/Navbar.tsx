@@ -75,24 +75,32 @@ export function Navbar() {
         scrolled ? 'border-line bg-canvas/95 shadow-sm backdrop-blur-xl' : 'border-transparent bg-canvas',
       )}
     >
-      <div className='mx-auto flex h-[72px] w-full max-w-[1440px] items-center gap-3 px-3 sm:px-4 lg:h-[72px] lg:px-4 xl:px-6'>
-        <Link to='/' className='flex shrink-0 items-center gap-2' aria-label='RML home'>
+      <div className='mx-auto flex h-[72px] w-full max-w-[1440px] items-center gap-2 px-3 sm:gap-3 sm:px-4 lg:h-[72px] lg:px-4 xl:px-6'>
+        {/* Brand block: logo + wordmark are visible at every width. It grows to
+            fill the free space on small screens so the action buttons stay
+            pinned to the far right; from 1280px up the inline nav takes over
+            that space instead. */}
+        <Link
+          to='/'
+          className='flex min-w-0 flex-1 items-center gap-2 sm:gap-3 xl:flex-none'
+          aria-label='RML home'
+        >
           {showLogo ? (
             <img
               src={logoUrl}
               alt='RML logo'
-              className='h-8 w-auto lg:h-9'
+              className='h-6 w-auto shrink-0 min-[360px]:h-7 sm:h-8 lg:h-9'
               onError={() => setLogoError(true)}
             />
           ) : (
-            <span className='font-serif text-2xl text-primary'>RML</span>
+            <span className='shrink-0 font-serif text-xl text-primary sm:text-2xl'>RML</span>
           )}
-          <span className='hidden border-l border-line pl-2 text-xs font-semibold uppercase tracking-[.13em] text-ink-soft min-[1350px]:block'>
+          <span className='min-w-0 border-l border-line pl-2 text-[10px] font-semibold uppercase leading-tight tracking-[.08em] text-ink-soft sm:text-xs sm:tracking-[.13em]'>
             Refugee and Migration Lab
           </span>
         </Link>
 
-        <nav className='ml-auto hidden items-center gap-1 lg:flex' aria-label='Primary'>
+        <nav className='hidden items-center gap-1 xl:ml-auto xl:flex' aria-label='Primary'>
           {NAV.map((item) => (
             <div
               key={item.key}
@@ -144,7 +152,7 @@ export function Navbar() {
           </button>
           <button
             type='button'
-            className='rounded-md p-2 text-ink lg:hidden'
+            className='rounded-md p-2 text-ink xl:hidden'
             onClick={() => setOpen((v) => !v)}
             aria-label={open ? 'Close menu' : 'Open menu'}
             aria-expanded={open}
@@ -156,7 +164,7 @@ export function Navbar() {
 
       {/* Mobile drawer */}
       {open && (
-        <div className='border-t border-line bg-canvas lg:hidden'>
+        <div className='border-t border-line bg-canvas xl:hidden'>
           <nav className='container-content flex flex-col gap-1 py-4' aria-label='Mobile'>
             {NAV.map((item) => (
               <div key={item.key}>

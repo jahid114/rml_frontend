@@ -118,11 +118,11 @@ export function Badge({
   tone = 'neutral',
 }: {
   children: ReactNode;
-  tone?: 'neutral' | 'accent' | 'primary' | 'success' | 'warning' | 'accentSolid' | 'lightSolid';
+  tone?: 'neutral' | 'accent' | 'primary' | 'success' | 'warning' | 'accentSolid' | 'lightSolid' | 'inkSolid';
 }) {
   // Usage rules (B7): translucent tones (neutral/accent/success/warning) on
-  // light surfaces only; `primary` anywhere; `accentSolid`/`lightSolid` are
-  // the ONLY tones permitted over photos (translucents wash out on images).
+  // light surfaces only; `primary` anywhere; `accentSolid`/`lightSolid`/`inkSolid`
+  // are the ONLY tones permitted over photos (translucents wash out on images).
   const tones: Record<string, string> = {
     neutral: 'bg-primary/10 text-primary',
     accent: 'bg-accent/15 text-accent-700',
@@ -133,6 +133,9 @@ export function Badge({
     // translucent tones wash out and fail contrast.
     accentSolid: 'bg-accent text-white shadow-md',
     lightSolid: 'bg-white/95 text-primary shadow-md',
+    // Solid chip that keeps its contrast in both themes: `text-primary` flips
+    // to a light colour in dark mode, which vanishes on a light chip.
+    inkSolid: 'bg-ink text-canvas shadow-md',
   };
   return (
     <span

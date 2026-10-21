@@ -53,11 +53,8 @@ export function EventsPage() {
     return events
       .filter((e) => e.status === tab)
       .filter((e) => yearFilter === 'all' || new Date(e.startDateTimeUtc).getUTCFullYear().toString() === yearFilter)
-      .sort((a, b) =>
-        tab === 'upcoming'
-          ? new Date(a.startDateTimeUtc).getTime() - new Date(b.startDateTimeUtc).getTime()
-          : new Date(b.startDateTimeUtc).getTime() - new Date(a.startDateTimeUtc).getTime()
-      );
+      // Both tabs list the latest event date first.
+      .sort((a, b) => new Date(b.startDateTimeUtc).getTime() - new Date(a.startDateTimeUtc).getTime());
   }, [events, tab, yearFilter]);
 
   return (

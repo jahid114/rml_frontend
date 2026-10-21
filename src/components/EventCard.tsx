@@ -31,7 +31,7 @@ export function EventCard({ event }: { event: Event }) {
           <span className="text-xs font-medium uppercase text-accent">{month}</span>
         </div>
         <div className="absolute right-3 top-3">
-          <Badge tone={isPast ? 'lightSolid' : 'accentSolid'}>
+          <Badge tone={isPast ? 'inkSolid' : 'accentSolid'}>
             {isPast ? 'Past' : 'Upcoming'}
           </Badge>
         </div>
