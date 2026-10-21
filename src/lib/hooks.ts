@@ -272,6 +272,50 @@ export function useApplyBrandColors() {
   }, [settings, theme]);
 }
 
+// ---------- Favicon ----------
+
+function imageTypeFor(url: string): string | null {
+  const ext = url.split('?')[0].split('#')[0].split('.').pop()?.toLowerCase();
+  switch (ext) {
+    case 'png': return 'image/png';
+    case 'jpg':
+    case 'jpeg': return 'image/jpeg';
+    case 'gif': return 'image/gif';
+    case 'ico': return 'image/x-icon';
+    case 'svg': return 'image/svg+xml';
+    default: return null;
+  }
+}
+
+/**
+ * Applies the favicon configured in the site settings to the home-screen icon
+ * (apple-touch-icon).
+ *
+ * The `rel="icon"` links are deliberately left static on /favicon.ico: Google
+ * allows only one favicon per hostname and requires a stable URL, so a CMS
+ * asset that changes on every upload must not take over the site icon that
+ * appears in search results. The PWA manifest keeps pointing at the static,
+ * generated wordmark icons.
+ */
+export function useApplyFavicon() {
+  const { data: settings } = useSiteSettings();
+  const faviconUrl = settings?.faviconUrl;
+  useEffect(() => {
+    if (!faviconUrl) return;
+    const type = imageTypeFor(faviconUrl);
+
+    let touchIcon = document.querySelector<HTMLLinkElement>('link[rel="apple-touch-icon"]');
+    if (!touchIcon) {
+      touchIcon = document.createElement('link');
+      touchIcon.rel = 'apple-touch-icon';
+      document.head.appendChild(touchIcon);
+    }
+    touchIcon.href = faviconUrl;
+    if (type) touchIcon.type = type;
+    touchIcon.sizes = '180x180';
+  }, [faviconUrl]);
+}
+
 // ---------- Page content ----------
 export function usePageContent<T>(key: PageContentKey) {
   return useQuery<T>({ queryKey: KEYS.page(key), queryFn: () => client.getPageContent(key) as Promise<T> });

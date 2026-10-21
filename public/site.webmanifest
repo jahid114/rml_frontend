@@ -1,0 +1,21 @@
+{
+  "name": "Refugee and Migration Lab",
+  "short_name": "RML",
+  "description": "Refugee and Migration Lab (RML) — an interdisciplinary research collective.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#123F3F",
+  "theme_color": "#123F3F",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

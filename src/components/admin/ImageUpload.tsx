@@ -13,6 +13,7 @@ interface ImageUploadProps {
    */
   onFile?: (file: File | null) => void;
   label?: string;
+  hint?: string;
   accept?: string;
   maxSizeMB?: number;
   className?: string;
@@ -25,6 +26,7 @@ export function ImageUpload({
   onChange,
   onFile,
   label = 'Image',
+  hint,
   accept = 'image/*',
   maxSizeMB = 5,
   className,
@@ -162,6 +164,8 @@ export function ImageUpload({
           </button>
         </div>
       </div>
+
+      {hint && <p className='text-xs text-ink-muted'>{hint}</p>}
 
       {mode === 'upload' ? (
         <div

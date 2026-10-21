@@ -21,7 +21,7 @@ function ColorField({ label, hint, value, placeholder, onChange }: {
       <div className="flex gap-2">
         <input
           type="color"
-          value={/^#[0-9a-fA-F]{6}$/.test(value) ? value : '#000000'}
+          value={/^#[0-9A-Fa-f]{6}$/.test(value) ? value : '#000000'}
           onChange={(e) => onChange(e.target.value)}
           className="h-10 w-10 shrink-0 cursor-pointer rounded border border-line"
           aria-label={`${label} picker`}
@@ -34,6 +34,58 @@ function ColorField({ label, hint, value, placeholder, onChange }: {
       </div>
     </FormField>
   );
+}
+
+/**
+ * Pads an image to a square (1:1) on the brand background and re-encodes it as
+ * PNG. Icons have to be square to be eligible for the browser tab, the iOS
+ * home screen and the Google site icon, so a non-square upload (e.g. a
+ * 376x272 wordmark) is normalised before it is stored.
+ */
+async function toSquareIcon(file: File, background: string): Promise<File> {
+  const load = async (): Promise<{ width: number; height: number; draw: CanvasImageSource }> => {
+    try {
+      const bitmap = await createImageBitmap(file);
+      return { width: bitmap.width, height: bitmap.height, draw: bitmap };
+    } catch {
+      const url = URL.createObjectURL(file);
+      try {
+        const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+          const el = new Image();
+          el.onload = () => resolve(el);
+          el.onerror = () => reject(new Error('Could not read image'));
+          el.src = url;
+        });
+        return { width: img.naturalWidth, height: img.naturalHeight, draw: img };
+      } finally {
+        URL.revokeObjectURL(url);
+      }
+    }
+  };
+
+  let image: { width: number; height: number; draw: CanvasImageSource };
+  try {
+    image = await load();
+  } catch {
+    return file;
+  }
+
+  const size = Math.max(image.width, image.height);
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return file;
+  ctx.fillStyle = background;
+  ctx.fillRect(0, 0, size, size);
+  const scale = Math.min(size / image.width, size / image.height);
+  const width = image.width * scale;
+  const height = image.height * scale;
+  ctx.drawImage(image.draw, (size - width) / 2, (size - height) / 2, width, height);
+
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
+  if (!blob) return file;
+  return new File([blob], `${file.name.replace(/\.[^.]+$/, '')}.png`, { type: 'image/png' });
 }
 
 export default function SettingsPage() {
@@ -57,7 +109,9 @@ export default function SettingsPage() {
         next = { ...next, logoUrl: uploaded.url };
       }
       if (faviconFile) {
-        const uploaded = await uploadMediaFile(faviconFile, faviconFile.name, 'settings');
+        // Icons must be square to be usable as tab / home-screen / site icons.
+        const square = await toSquareIcon(faviconFile, form.primaryColor || '#123F3F');
+        const uploaded = await uploadMediaFile(square, square.name, 'settings');
         next = { ...next, faviconUrl: uploaded.url };
       }
       await updateSettings.mutateAsync(next);
@@ -88,7 +142,13 @@ export default function SettingsPage() {
           <h2 className="text-sm font-semibold uppercase tracking-wider text-ink-muted">Branding</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <ImageUpload label="Logo" value={form.logoUrl} onChange={(url) => set('logoUrl', url)} onFile={setLogoFile} />
-            <ImageUpload label="Favicon" value={form.faviconUrl} onChange={(url) => set('faviconUrl', url)} onFile={setFaviconFile} />
+            <ImageUpload
+              label="Favicon"
+              hint="Square (1:1) image, 512×512 or larger. Non-square uploads are padded automatically."
+              value={form.faviconUrl}
+              onChange={(url) => set('faviconUrl', url)}
+              onFile={setFaviconFile}
+            />
           </div>
         </section>
 
