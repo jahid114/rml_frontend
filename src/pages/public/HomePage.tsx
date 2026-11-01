@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Globe2, GraduationCap, Megaphone, Scale, Users, type LucideIcon } from 'lucide-react';
 import { GallerySlider, type GallerySlide } from '@/components/GallerySlider';
-import { useFeaturedJob, useHomeContent, useSiteSettings, useUpcomingEvents } from '@/lib/hooks';
+import { usePartners, useFeaturedJob, useHomeContent, useSiteSettings, useUpcomingEvents, usePublishedEvents } from '@/lib/hooks';
 import { normalizeHomeContent } from '@/lib/utils';
 import { formatDate } from '@/lib/utils';
 import { Skeleton, Eyebrow } from '@/components/ui/primitives';
@@ -14,7 +14,11 @@ export default function HomePage() {
   const { data: home, isLoading, isError, refetch } = useHomeContent();
   const { data: job } = useFeaturedJob();
   const { data: events } = useUpcomingEvents();
+  // Full event list (upcoming + past) so an admin-pinned event can be featured
+  // even if it's no longer upcoming.
+  const { data: allEvents } = usePublishedEvents();
   const { data: settings } = useSiteSettings();
+  const { data: partners } = usePartners();
   const nextEvent = events?.[0];
 
   useDocumentMeta({
@@ -34,6 +38,8 @@ export default function HomePage() {
   );
 
   const content = normalizeHomeContent(home);
+  const pinned = content.featuredEventId ? allEvents?.find((e) => e.id === content.featuredEventId) : undefined;
+  const featuredEvent = pinned ?? nextEvent;
 
   const adminSlides: GallerySlide[] = content.heroSlides.map((s) => ({
     image: s.imageUrl,
@@ -102,14 +108,14 @@ export default function HomePage() {
             <Link to='/events' className='inline-flex items-center gap-2 text-sm font-semibold text-primary'>{content.eventsLinkLabel} <ArrowRight className='h-4 w-4' /></Link>
           </div>
           <div className='mt-12 grid gap-6 lg:grid-cols-[1.35fr_.65fr]'>
-            <Link to={nextEvent ? `/events/${nextEvent.slug}` : '/events'} className='group relative min-h-[480px] overflow-hidden rounded-[1.5rem] bg-primary'>
-              {nextEvent ? (
-                <img src={nextEvent.coverImageUrl} alt='' className='absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105' />
+            <Link to={featuredEvent ? `/events/${featuredEvent.slug}` : '/events'} className='group relative min-h-[480px] overflow-hidden rounded-[1.5rem] bg-primary'>
+              {featuredEvent ? (
+                <img src={featuredEvent.coverImageUrl} alt='' className='absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105' />
               ) : (
                 <div className='absolute inset-0 bg-gradient-to-br from-primary via-primary/80 to-accent/40' aria-hidden />
               )}
               <div className='absolute inset-0 bg-gradient-to-t from-primary via-primary/45 to-transparent' />
-              <div className='absolute inset-x-0 bottom-0 p-7 sm:p-10'><p className='text-xs font-semibold uppercase tracking-[.2em] text-gold'>{nextEvent ? `Next event · ${formatDate(nextEvent.startDateTimeUtc)}` : 'Events archive'}</p><h3 className='mt-4 max-w-2xl text-2xl leading-tight text-white sm:text-4xl'>{nextEvent?.title ?? 'Catch up on RML seminars, panels, and commemorations'}</h3><span className='mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white'>{content.featuredCardCtaLabel} <ArrowRight className='h-4 w-4' /></span></div>
+              <div className='absolute inset-x-0 bottom-0 p-7 sm:p-10'><p className='text-xs font-semibold uppercase tracking-[.2em] text-gold'>{featuredEvent ? `${pinned ? 'Featured event' : 'Next event'} · ${formatDate(featuredEvent.startDateTimeUtc)}` : 'Events archive'}</p><h3 className='mt-4 max-w-2xl text-2xl leading-tight text-white sm:text-4xl'>{featuredEvent?.title ?? 'Catch up on RML seminars, panels, and commemorations'}</h3><span className='mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white'>{content.featuredCardCtaLabel} <ArrowRight className='h-4 w-4' /></span></div>
             </Link>
             <Link to='/join' className='group flex min-h-[330px] flex-col justify-between rounded-[1.5rem] bg-accent p-8 text-white sm:p-10 lg:min-h-0'>
               <div className='flex items-center justify-between'><Users className='h-6 w-6' /><span className='rounded-full border border-white/30 px-3 py-1 text-xs uppercase tracking-widest'>{job ? 'Open call' : content.joinFallbackBadge}</span></div>
@@ -118,6 +124,29 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {!!partners?.length && (
+        <section className='border-t border-line py-16 sm:py-20'>
+          <div className='container-content'>
+            <Eyebrow>Our partners</Eyebrow>
+            <ul className='mt-8 grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-3 lg:grid-cols-5'>
+              {partners.map((p) => {
+                const body = (
+                  <>
+                    <img src={p.logoUrl} alt={`${p.name} logo`} loading='lazy' className='h-16 w-full object-contain' />
+                    <span className='mt-3 block text-center text-sm font-medium text-ink-soft'>{p.name}</span>
+                  </>
+                );
+                return (
+                  <li key={p.id}>
+                    {p.link ? <a href={p.link} target='_blank' rel='noreferrer' className='block transition hover:opacity-70'>{body}</a> : body}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </section>
+      )}
 
       <section className='border-y border-line bg-white py-16'>
         <div className='container-content flex flex-col items-center justify-between gap-8 text-center lg:flex-row lg:text-left'>

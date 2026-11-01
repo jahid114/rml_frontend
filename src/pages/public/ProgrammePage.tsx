@@ -1,6 +1,7 @@
 import { Check, Mail, ExternalLink } from 'lucide-react';
 import { SectionHeading, Skeleton, Eyebrow } from '@/components/ui/primitives';
-import { usePageContent } from '@/lib/hooks';
+import { PersonCard } from '@/components/PersonCard';
+import { usePageContent, usePublishedPeople } from '@/lib/hooks';
 import type { ProgrammePageContent } from '@/lib/types';
 import { useDocumentMeta } from '@/lib/seo';
 import { webPageLd } from '@/lib/jsonld';
@@ -19,6 +20,9 @@ const DESCRIPTIONS: Record<keyof typeof TITLES, string> = {
 
 export function ProgrammePage({ pageKey = 'internship' }: { pageKey?: 'internship' | 'visiting-fellowship' }) {
   const { data, isLoading } = usePageContent<ProgrammePageContent>(pageKey);
+  const { data: people } = usePublishedPeople();
+  const alumniRole = pageKey === 'internship' ? 'past-intern' : 'past-visiting-fellow';
+  const alumni = (people ?? []).filter((p) => p.role === alumniRole).sort((a, b) => a.order - b.order);
 
   useDocumentMeta({
     title: data?.seoTitle?.trim() || TITLES[pageKey],
@@ -91,6 +95,15 @@ export function ProgrammePage({ pageKey = 'internship' }: { pageKey?: 'internshi
             </ol>
           </section>
         </div>
+
+        {alumni.length > 0 && (
+          <section className="mt-14">
+            <SectionHeading eyebrow="Alumni" title={pageKey === 'internship' ? 'Past interns' : 'Past visiting fellows'} />
+            <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {alumni.map((p) => <PersonCard key={p.id} person={p} />)}
+            </div>
+          </section>
+        )}
 
         {/* CTA */}
         <div className="mt-14 rounded-card bg-primary p-8 text-center text-white sm:p-12">

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/primitives';
 import { showToast } from '@/components/admin/Toast';
 import { Plus, Trash2 } from 'lucide-react';
 import type { SiteSettings } from '@/lib/types';
-import { DEFAULT_BRAND_COLORS } from '@/lib/seed';
+import { DEFAULT_BRAND_COLORS, DEFAULT_NAV_LABELS } from '@/lib/seed';
 
 function ColorField({ label, hint, value, placeholder, onChange }: {
   label: string;
@@ -95,7 +95,9 @@ export default function SettingsPage() {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [faviconFile, setFaviconFile] = useState<File | null>(null);
 
-  useEffect(() => { if (settings) setForm(settings); }, [settings]);
+  useEffect(() => {
+    if (settings) setForm({ ...settings, navLabels: { ...DEFAULT_NAV_LABELS, ...settings.navLabels } });
+  }, [settings]);
 
   const set = <K extends keyof SiteSettings>(key: K, val: SiteSettings[K]) =>
     setForm((f) => f ? { ...f, [key]: val } : f);

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useHomeContent, useAboutContent, useContactContent, usePageContent, useUpdatePageContent } from '@/lib/hooks';
+import { useHomeContent, useAboutContent, useContactContent, usePageContent, useUpdatePageContent, useEvents } from '@/lib/hooks';
 import { ApiError, uploadMediaFile } from '@/lib/client';
-import { FormField, Input, Textarea } from '@/components/admin/FormField';
+import { FormField, Input, Select, Textarea } from '@/components/admin/FormField';
 import { ImageUpload } from '@/components/admin/ImageUpload';
 import { RepeatableList } from '@/components/admin/RepeatableList';
 import { WhatWeDoEditor } from '@/components/admin/WhatWeDoEditor';
@@ -53,6 +53,7 @@ function HomeEditor() {
   const navigate = useNavigate();
   const { data, isLoading } = useHomeContent();
   const updateContent = useUpdatePageContent();
+  const { data: events = [] } = useEvents();
   const [form, setForm] = useState<HomeContent | null>(null);
   const slideFiles = useRef<Record<number, File | null>>({});
 
@@ -186,8 +187,22 @@ function HomeEditor() {
       <section className="rounded-card border border-line bg-white p-6 space-y-5">
         <div>
           <h2 className="text-base font-semibold text-ink">Featured section (“Now at RML”)</h2>
-          <p className="mt-0.5 text-xs text-ink-muted">Event and join cards pull the next upcoming event and the featured job automatically; the fields below control headings and fallbacks shown when none exist.</p>
+          <p className="mt-0.5 text-xs text-ink-muted">Pick which event the featured card highlights; leave it on Auto to show the next upcoming event. The join card pulls the featured job automatically.</p>
         </div>
+        <FormField
+          label="Featured event"
+          hint="Auto shows the next upcoming event; choosing one pins it to the card."
+        >
+          <Select value={form.featuredEventId} onChange={(e) => set('featuredEventId', e.target.value)}>
+            <option value="">Auto — next upcoming event</option>
+            {events.map((ev) => (
+              <option key={ev.id} value={ev.id}>
+                {ev.title} · {new Date(ev.startDateTimeUtc).toLocaleDateString()}
+                {ev.status === 'past' ? ' (Past)' : ''}
+              </option>
+            ))}
+          </Select>
+        </FormField>
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField label="Kicker" required>
             <Input value={form.eventsKicker} onChange={(e) => set('eventsKicker', e.target.value)} />

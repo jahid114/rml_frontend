@@ -4,6 +4,7 @@ import { Menu, X, ChevronDown, Moon, Sun } from 'lucide-react';
 import { cn } from './ui/cn';
 import { useSiteSettings } from '@/lib/hooks';
 import { useTheme } from '@/lib/theme';
+import { DEFAULT_NAV_LABELS } from '@/lib/seed';
 
 interface NavItem {
   key: string;
@@ -11,7 +12,7 @@ interface NavItem {
   children?: { key: string; to: string; label: string }[];
 }
 
-const NAV: NavItem[] = [
+const PRIMARY_NAV: NavItem[] = [
   { key: 'home', to: '/' },
   { key: 'about', to: '/about' },
   {
@@ -27,16 +28,13 @@ const NAV: NavItem[] = [
   { key: 'research', to: '/research' },
   { key: 'publications', to: '/publications' },
   { key: 'events', to: '/events' },
-  {
-    key: 'programmes',
-    to: '/programmes/internship',
-    children: [
-      { key: 'internship', to: '/programmes/internship', label: 'Internship Programme' },
-      { key: 'visiting-fellowship', to: '/programmes/visiting-fellowship', label: 'Visiting Fellowship' },
-    ],
-  },
   { key: 'join', to: '/join' },
   { key: 'contact', to: '/contact' },
+];
+
+const SECONDARY_NAV: NavItem[] = [
+  { key: 'internship', to: '/programmes/internship' },
+  { key: 'visiting-fellowship', to: '/programmes/visiting-fellowship' },
 ];
 
 export function Navbar() {
@@ -58,7 +56,7 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const labels = settings?.navLabels ?? {};
+  const labels = { ...DEFAULT_NAV_LABELS, ...(settings?.navLabels ?? {}) };
   const labelFor = (key: string) => labels[key] ?? key.charAt(0).toUpperCase() + key.slice(1).replace(/-/g, ' ');
 
   const logoUrl = settings?.logoUrl;
@@ -75,16 +73,16 @@ export function Navbar() {
         scrolled ? 'border-line bg-canvas/95 shadow-sm backdrop-blur-xl' : 'border-transparent bg-canvas',
       )}
     >
-      <div className='mx-auto flex h-[72px] w-full max-w-[1440px] items-center gap-2 px-3 sm:gap-3 sm:px-4 lg:h-[72px] lg:px-4 xl:px-6'>
-        {/* Brand block: logo + wordmark are visible at every width. It grows to
-            fill the free space on small screens so the action buttons stay
-            pinned to the far right; from 1280px up the inline nav takes over
-            that space instead. */}
-        <Link
-          to='/'
-          className='flex min-w-0 flex-1 items-center gap-2 sm:gap-3 xl:flex-none'
-          aria-label='RML home'
-        >
+      <div className='mx-auto w-full max-w-[1440px] px-3 sm:px-4 lg:px-4 xl:px-6'>
+
+      {/* Line 1: Logo + Primary Nav + Actions */}
+      <div
+        className={cn(
+          'flex items-start gap-4',
+          scrolled ? 'bg-canvas/95 backdrop-blur-xl' : 'bg-canvas',
+        )}
+      >
+        <Link to='/' className='flex h-[72px] min-w-0 items-center gap-2 sm:gap-3 xl:flex-none' aria-label='RML home'>
           {showLogo ? (
             <img
               src={logoUrl}
@@ -95,20 +93,56 @@ export function Navbar() {
           ) : (
             <span className='shrink-0 font-serif text-xl text-primary sm:text-2xl'>RML</span>
           )}
-          <span className='min-w-0 border-l border-line pl-2 text-[10px] font-semibold uppercase leading-tight tracking-[.08em] text-ink-soft sm:text-xs sm:tracking-[.13em]'>
+          <span className='min-w-0 border-l border-line pl-2 text-sm font-black uppercase leading-tight tracking-[.08em] text-ink sm:text-sm sm:tracking-[.13em]'>
             Refugee and Migration Lab
           </span>
         </Link>
 
-        <nav className='hidden items-center gap-1 xl:ml-auto xl:flex' aria-label='Primary'>
-          {NAV.map((item) => (
-            <div
-              key={item.key}
-              className='relative'
-              onMouseEnter={() => item.children && setOpenMenu(item.key)}
-              onMouseLeave={() => setOpenMenu(null)}
-            >
+        <div className='ml-auto hidden xl:flex flex-col items-start min-[1440px]:flex-row min-[1440px]:items-center min-[1440px]:gap-2'>
+          <nav className='flex h-[72px] items-center gap-1' aria-label='Primary'>
+            {PRIMARY_NAV.map((item) => (
+              <div
+                key={item.key}
+                className='relative'
+                onMouseEnter={() => item.children && setOpenMenu(item.key)}
+                onMouseLeave={() => setOpenMenu(null)}
+              >
+                <NavLink
+                  to={item.to}
+                  end={item.to === '/'}
+                  className={({ isActive }) =>
+                    cn(
+                      'flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-2 text-xs font-semibold uppercase tracking-wide transition-colors',
+                      isActive ? 'bg-primary text-white' : 'text-ink hover:bg-primary/5 hover:text-primary',
+                    )
+                  }
+                >
+                  {labelFor(item.key)}
+                  {item.children && <ChevronDown className='h-3.5 w-3.5' aria-hidden />}
+                </NavLink>
+                {item.children && openMenu === item.key && (
+                  <div className='absolute left-0 top-full pt-1'>
+                    <div className='w-56 overflow-hidden rounded-lg border border-line bg-white py-1 shadow-card'>
+                      {item.children.map((c) => (
+                        <Link
+                          key={c.to}
+                          to={c.to}
+                          className='block px-4 py-2 text-sm text-ink hover:bg-primary/5 hover:text-primary'
+                        >
+                          {c.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </nav>
+
+          <div className='flex items-center gap-1 pb-2 min-[1440px]:h-[72px] min-[1440px]:pb-0' aria-label='Secondary'>
+            {SECONDARY_NAV.map((item) => (
               <NavLink
+                key={item.key}
                 to={item.to}
                 end={item.to === '/'}
                 className={({ isActive }) =>
@@ -119,28 +153,12 @@ export function Navbar() {
                 }
               >
                 {labelFor(item.key)}
-                {item.children && <ChevronDown className='h-3.5 w-3.5' aria-hidden />}
               </NavLink>
-              {item.children && openMenu === item.key && (
-                <div className='absolute left-0 top-full pt-1'>
-                  <div className='w-56 overflow-hidden rounded-lg border border-line bg-white py-1 shadow-card'>
-                    {item.children.map((c) => (
-                      <Link
-                        key={c.to}
-                        to={c.to}
-                        className='block px-4 py-2 text-sm text-ink hover:bg-primary/5 hover:text-primary'
-                      >
-                        {c.label}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </nav>
+            ))}
+          </div>
+        </div>
 
-        <div className='flex shrink-0 items-center'>
+        <div className='flex h-[72px] shrink-0 items-center gap-2'>
           <button
             type='button'
             className='rounded-md p-2 text-ink transition-colors hover:bg-primary/5'
@@ -161,43 +179,44 @@ export function Navbar() {
           </button>
         </div>
       </div>
+    </div>
 
-      {/* Mobile drawer */}
-      {open && (
-        <div className='border-t border-line bg-canvas xl:hidden'>
-          <nav className='container-content flex flex-col gap-1 py-4' aria-label='Mobile'>
-            {NAV.map((item) => (
-              <div key={item.key}>
-                <NavLink
-                  to={item.to}
-                  end={item.to === '/'}
-                  className={({ isActive }) =>
-                    cn(
-                      'block rounded-md px-3 py-2.5 text-base font-medium',
-                      isActive ? 'bg-accent/10 text-accent' : 'text-ink hover:bg-primary/5',
-                    )
-                  }
-                >
-                  {labelFor(item.key)}
-                </NavLink>
-                {item.children && (
-                  <div className='ml-3 border-l border-line pl-2'>
-                    {item.children.map((c) => (
-                      <Link
-                        key={c.to}
-                        to={c.to}
-                        className='block rounded-md px-3 py-2 text-sm text-ink-muted hover:text-primary'
-                      >
-                        {c.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </nav>
-        </div>
-      )}
+    {/* Mobile drawer */}
+    {open && (
+      <div className='border-t border-line bg-canvas xl:hidden'>
+        <nav className='container-content flex flex-col gap-1 py-4' aria-label='Mobile'>
+          {[...PRIMARY_NAV, ...SECONDARY_NAV].map((item) => (
+            <div key={item.key}>
+              <NavLink
+                to={item.to}
+                end={item.to === '/'}
+                className={({ isActive }) =>
+                  cn(
+                    'block rounded-md px-3 py-2.5 text-base font-medium',
+                    isActive ? 'bg-accent/10 text-accent' : 'text-ink hover:bg-primary/5',
+                  )
+                }
+              >
+                {labelFor(item.key)}
+              </NavLink>
+              {item.children && (
+                <div className='ml-3 border-l border-line pl-2'>
+                  {item.children.map((c) => (
+                    <Link
+                      key={c.to}
+                      to={c.to}
+                      className='block rounded-md px-3 py-2 text-sm text-ink-muted hover:text-primary'
+                    >
+                      {c.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </nav>
+      </div>
+    )}
     </header>
   );
 }

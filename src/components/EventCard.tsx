@@ -23,7 +23,7 @@ export function EventCard({ event }: { event: Event }) {
         <OptimizedImage
           src={event.coverImageUrl}
           alt={event.title}
-          ratio="16/9"
+          ratio="natural"
           className="w-full rounded-t-card"
         />
         <div className="absolute left-3 top-3 flex h-14 w-14 flex-col items-center justify-center rounded-md bg-white shadow-card">

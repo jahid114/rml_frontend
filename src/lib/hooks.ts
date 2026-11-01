@@ -7,6 +7,7 @@ import type {
   Publication,
   Event,
   JobOpening,
+  Partner,
   ResearchTheme,
   SiteSettings,
   MediaItem,
@@ -28,6 +29,7 @@ const KEYS = {
   eventsUpcoming: ['events', 'upcoming'] as const,
   eventsPublished: ['events', 'published'] as const,
   jobs: ['jobs'] as const,
+  partners: ['partners'] as const,
   jobsOpen: ['jobs', 'open'] as const,
   jobsFeatured: ['jobs', 'featured'] as const,
   research: ['research'] as const,
@@ -415,4 +417,30 @@ export function useVisitingContent() {
 }
 export function useContactContent() {
   return usePageContent<ContactContent>('contact');
+}
+
+// ---------- Partners ----------
+export function usePartners() {
+  return useQuery<Partner[]>({ queryKey: KEYS.partners, queryFn: client.getPartners });
+}
+export function useCreatePartner() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Omit<Partner, 'id'>) => client.createPartner(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEYS.partners }),
+  });
+}
+export function useUpdatePartner() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Partner> }) => client.updatePartner(id, data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEYS.partners }),
+  });
+}
+export function useDeletePartner() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => client.deletePartner(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: KEYS.partners }),
+  });
 }

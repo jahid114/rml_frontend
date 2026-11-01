@@ -172,12 +172,12 @@ export function EventDetailPage() {
           <ArrowLeft className="h-3.5 w-3.5" /> All events
         </Link>
 
-        {/* Cover image on top — full-width 16:9, no overlaid text */}
+        {/* Cover image on top — full width, whole banner (no crop), no overlaid text */}
         <div className="overflow-hidden rounded-card shadow-card">
           <OptimizedImage
             src={event.coverImageUrl}
             alt={event.title}
-            ratio="16/9"
+            ratio="natural"
             priority
             className="w-full"
           />

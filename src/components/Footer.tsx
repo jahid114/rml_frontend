@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Linkedin, Youtube, Instagram, Twitter, MessageCircle } from 'lucide-react';
 import { useSiteSettings } from '@/lib/hooks';
+import { DEFAULT_NAV_LABELS } from '@/lib/seed';
 
 const PLATFORM_ICONS: Record<string, typeof Facebook> = {
   Facebook,
@@ -27,7 +28,7 @@ const FOOTER_NAV = [
 
 export function Footer() {
   const { data: settings } = useSiteSettings();
-  const labels = settings?.navLabels ?? {};
+  const labels = { ...DEFAULT_NAV_LABELS, ...(settings?.navLabels ?? {}) };
   const labelFor = (key: string) =>
     labels[key] ?? key.charAt(0).toUpperCase() + key.slice(1).replace(/-/g, ' ');
 

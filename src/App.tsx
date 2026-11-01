@@ -28,6 +28,8 @@ import ResearchListPage from '@/pages/admin/ResearchListPage';
 import ResearchFormPage from '@/pages/admin/ResearchFormPage';
 import JobsListPage from '@/pages/admin/JobsListPage';
 import JobFormPage from '@/pages/admin/JobFormPage';
+import PartnersListPage from '@/pages/admin/PartnersListPage';
+import PartnerFormPage from '@/pages/admin/PartnerFormPage';
 import PagesListPage from '@/pages/admin/PagesListPage';
 import PageContentFormPage from '@/pages/admin/PageContentFormPage';
 import SettingsPage from '@/pages/admin/SettingsPage';
@@ -48,8 +50,6 @@ const queryClient = new QueryClient({
 });
 
 const NotFound = () => {
-  // Soft-404 mitigation: the SPA fallback returns HTTP 200 for unknown paths,
-  // so the not-found page tells crawlers not to index it.
   useDocumentMeta({
     title: 'Page not found',
     description: 'The page you are looking for does not exist.',
@@ -84,8 +84,8 @@ const router = createBrowserRouter([
       { path: '/publications/:slug', element: <PublicationDetailPage /> },
       { path: '/events', element: <EventsPage /> },
       { path: '/events/:slug', element: <EventDetailPage /> },
-      { path: '/programmes/internship', element: <ProgrammePage pageKey="internship" /> },
-      { path: '/programmes/visiting-fellowship', element: <ProgrammePage pageKey="visiting-fellowship" /> },
+      { path: '/programmes/internship', element: <ProgrammePage pageKey='internship' /> },
+      { path: '/programmes/visiting-fellowship', element: <ProgrammePage pageKey='visiting-fellowship' /> },
       { path: '/join', element: <JoinPage /> },
       { path: '/contact', element: <ContactPage /> },
       { path: '*', element: <NotFound /> },
@@ -113,6 +113,8 @@ const router = createBrowserRouter([
           { path: 'research/:id', element: <ResearchFormPage /> },
           { path: 'jobs', element: <JobsListPage /> },
           { path: 'jobs/:id', element: <JobFormPage /> },
+          { path: 'partners', element: <PartnersListPage /> },
+          { path: 'partners/:id', element: <PartnerFormPage /> },
           { path: 'pages', element: <PagesListPage /> },
           { path: 'pages/:pageKey', element: <PageContentFormPage /> },
           { path: 'settings', element: <SettingsPage /> },

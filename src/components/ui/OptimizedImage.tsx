@@ -9,7 +9,7 @@ interface OptimizedImageProps {
   height?: number;
   sizes?: string;
   priority?: boolean;
-  ratio?: 'square' | '2/3' | '16/9' | 'auto';
+  ratio?: 'square' | '2/3' | '16/9' | 'natural' | 'auto';
   /** Focal discipline (C10): portraits use "top" so square crops keep faces. */
   align?: 'center' | 'top';
   /** Compact monogram fallback for small thumbs (e.g. 56px avatar circles). */
@@ -19,6 +19,8 @@ interface OptimizedImageProps {
 // Lazy-loading image with blur-up placeholder and explicit dimensions to
 // prevent CLS. Uses native loading=lazy + async decode. On failure renders an
 // institutional RML monogram (C11) instead of an empty grey block.
+// ratio="natural" renders the whole image uncropped at its own aspect ratio
+// (no fixed box, no object-cover crop) — used where a full banner must show.
 export function OptimizedImage({
   src,
   alt,
@@ -32,13 +34,21 @@ export function OptimizedImage({
 }: OptimizedImageProps) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
+  const natural = ratio === 'natural';
   const ratioClass =
     ratio === 'square' ? 'aspect-square' : ratio === '2/3' ? 'aspect-[2/3]' : ratio === '16/9' ? 'aspect-video' : '';
 
   return (
     <span
-      className={cn('relative block overflow-hidden bg-line/40', ratioClass, className)}
-      style={ratio === 'auto' && width && height ? { aspectRatio: `${width}/${height}` } : undefined}
+      className={cn(
+        'relative block overflow-hidden bg-line/40',
+        !natural && ratioClass,
+        // Reserve height while a natural-ratio image loads (it has no fixed
+        // box), so the blur placeholder is visible instead of collapsing to 0.
+        natural && !loaded && !failed && 'min-h-56',
+        className,
+      )}
+      style={!natural && ratio === 'auto' && width && height ? { aspectRatio: `${width}/${height}` } : undefined}
     >
       {!loaded && !failed && <span className='absolute inset-0 animate-pulse bg-line/50' aria-hidden />}
       {failed ? (
@@ -67,7 +77,8 @@ export function OptimizedImage({
           onLoad={() => setLoaded(true)}
           onError={() => setFailed(true)}
           className={cn(
-            'relative h-full w-full object-cover transition-opacity duration-500',
+            'relative w-full transition-opacity duration-500',
+            natural ? 'block h-auto' : 'h-full object-cover',
             align === 'top' && 'object-top',
             'opacity-100',
           )}
