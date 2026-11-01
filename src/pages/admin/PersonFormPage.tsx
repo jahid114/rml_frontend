@@ -20,6 +20,8 @@ const ROLES: { value: Role; label: string }[] = [
   { value: 'research-assistant-part-time', label: 'Research Assistant (Part-Time)' },
   { value: 'non-resident-fellow', label: 'Non-Resident Fellow' },
   { value: 'research-affiliate', label: 'Research Affiliate' },
+  { value: 'past-intern', label: 'Past Intern' },
+  { value: 'past-visiting-fellow', label: 'Past Visiting Fellow' },
 ];
 
 interface Form {

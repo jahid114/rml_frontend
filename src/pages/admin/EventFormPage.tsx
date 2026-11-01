@@ -9,6 +9,7 @@ import { BackButton } from '@/components/admin/BackButton';
 import { Button } from '@/components/ui/primitives';
 import { showToast } from '@/components/admin/Toast';
 import { slugify } from '@/lib/utils';
+import type { Event } from '@/lib/types';
 
 interface Form {
   title: string;
@@ -80,12 +81,27 @@ export default function EventFormPage() {
         return;
       }
     }
-    const payload = {
-      ...data,
+    // Send only the fields this form manages. Seeding the payload from the
+    // raw DB row would carry `registrationUrl: null` / `recordingUrl: null`
+    // into the PATCH body, which the backend rejects with 400 — blocking the
+    // status change (e.g. marking an event as Past). Preserve the read-only
+    // fields that aren't editable here instead of overwriting them.
+    const payload: Omit<Event, 'id'> = {
+      slug: data.slug,
+      title: data.title,
+      theme: data.theme,
+      description: data.description,
       coverImageUrl,
+      status: data.status,
+      eventFormat: data.eventFormat,
       startDateTimeUtc: new Date(data.startDateTimeUtc).toISOString(),
-      timezoneLabels: [],
+      organizer: data.organizer,
+      collaborators: data.collaborators,
+      timezoneLabels: existing?.timezoneLabels ?? [],
       panelists: existing?.panelists ?? [],
+      ...(existing?.registrationUrl ? { registrationUrl: existing.registrationUrl } : {}),
+      ...(existing?.recordingUrl ? { recordingUrl: existing.recordingUrl } : {}),
+      ...(existing?.socialLinks ? { socialLinks: existing.socialLinks } : {}),
     };
     try {
       if (isNew) {

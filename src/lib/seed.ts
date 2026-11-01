@@ -1071,6 +1071,7 @@ export const seedHomeContent: HomeContent = {
   eventsHeading: 'Ideas, people, possibilities',
   eventsLinkLabel: 'View all events',
   featuredCardCtaLabel: 'Explore event',
+  featuredEventId: '',
   joinFallbackBadge: 'Collaborate',
   joinFallbackTitle: 'Join our global research community',
   joinFallbackText:
@@ -1228,23 +1229,24 @@ export const DEFAULT_BRAND_COLORS = {
   backgroundColorDark: '#0e1616',
 };
 
+export const DEFAULT_NAV_LABELS: Record<string, string> = {
+  home: 'Home',
+  about: 'About',
+  team: 'Team',
+  research: 'Research',
+  publications: 'Publications',
+  events: 'Events & News',
+  internship: 'Internship Programme',
+  'visiting-fellowship': 'Visiting Fellowship',
+  join: 'Join',
+  contact: 'Contact',
+};
+
 export const seedSettings: SiteSettings = {
   logoUrl: '/rml-logo.svg',
   faviconUrl: '/favicon.svg',
   ...DEFAULT_BRAND_COLORS,
-  navLabels: {
-    home: 'Home',
-    about: 'About',
-    team: 'Team',
-    research: 'Research',
-    publications: 'Publications',
-    events: 'Events & News',
-    programmes: 'Programmes',
-    internship: 'Internship Programme',
-    'visiting-fellowship': 'Visiting Fellowship',
-    join: 'Join',
-    contact: 'Contact',
-  },
+  navLabels: { ...DEFAULT_NAV_LABELS },
   socialLinks: [
     { platform: 'Facebook', url: 'https://www.facebook.com/refugee.migration.lab/' },
     { platform: 'LinkedIn', url: 'https://www.linkedin.com/in/refugee-and-migration-lab-910316362/' },

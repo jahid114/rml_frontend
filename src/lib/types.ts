@@ -9,7 +9,9 @@ export type Role =
   | 'research-assistant-full-time'
   | 'research-assistant-part-time'
   | 'non-resident-fellow'
-  | 'research-affiliate';
+  | 'research-affiliate'
+  | 'past-intern'
+  | 'past-visiting-fellow';
 
 export const ROLE_GROUPS: { group: string; roles: Role[] }[] = [
   { group: 'Director', roles: ['director'] },
@@ -37,6 +39,8 @@ export const ROLE_LABELS: Record<Role, string> = {
   'research-assistant-part-time': 'Research Assistant (Part-Time)',
   'non-resident-fellow': 'Non-Resident Fellow',
   'research-affiliate': 'Research Affiliate',
+  'past-intern': 'Past Intern',
+  'past-visiting-fellow': 'Past Visiting Fellow',
 };
 
 export interface Person {
@@ -173,6 +177,8 @@ export interface HomeContent {
   eventsHeading: string;
   eventsLinkLabel: string;
   featuredCardCtaLabel: string;
+  /** Event id shown in the featured "Now at RML" card; '' = auto (next upcoming event). */
+  featuredEventId: string;
   joinFallbackBadge: string;
   joinFallbackTitle: string;
   joinFallbackText: string;
@@ -261,4 +267,12 @@ export interface ActivityLogEntry {
   action: string;
   target: string;
   timestamp: string;
+}
+
+export interface Partner {
+  id: string;
+  name: string;
+  logoUrl: string;
+  link?: string | null;
+  order: number;
 }

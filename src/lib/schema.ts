@@ -9,6 +9,8 @@ export const roleSchema = z.enum([
   'research-assistant-part-time',
   'non-resident-fellow',
   'research-affiliate',
+  'past-intern',
+  'past-visiting-fellow',
 ]);
 
 export const personSchema = z.object({
@@ -139,6 +141,7 @@ export const homeContentSchema = z.object({
   eventsHeading: z.string().min(1, 'Heading required'),
   eventsLinkLabel: z.string().min(1, 'Link label required'),
   featuredCardCtaLabel: z.string().min(1, 'CTA label required'),
+  featuredEventId: z.string().default(''),
   joinFallbackBadge: z.string().min(1, 'Badge required'),
   joinFallbackTitle: z.string().min(1, 'Title required'),
   joinFallbackText: z.string().min(1, 'Text required'),

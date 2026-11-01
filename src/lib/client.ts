@@ -8,6 +8,7 @@ import type {
   Publication,
   Event,
   JobOpening,
+  Partner,
   ResearchTheme,
   SiteSettings,
   MediaItem,
@@ -344,4 +345,21 @@ export interface ContactNote {
 
 export async function sendContactNote(data: ContactNote): Promise<void> {
   await api<{ ok: true }>('/contact', 'POST', data);
+}
+
+// ---------- Partners ----------
+export async function getPartners(): Promise<Partner[]> {
+  return api<Partner[]>('/partners');
+}
+
+export async function createPartner(data: Omit<Partner, 'id'>): Promise<Partner> {
+  return api<Partner>('/partners', 'POST', data);
+}
+
+export async function updatePartner(id: string, data: Partial<Partner>): Promise<Partner> {
+  return api<Partner>(`/partners/${encodeURIComponent(id)}`, 'PATCH', data);
+}
+
+export async function deletePartner(id: string): Promise<void> {
+  await api<{ ok: true }>(`/partners/${encodeURIComponent(id)}`, 'DELETE');
 }
