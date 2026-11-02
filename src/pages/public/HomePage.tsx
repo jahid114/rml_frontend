@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Globe2, GraduationCap, Megaphone, Scale, Users, type LucideIcon } from 'lucide-react';
 import { GallerySlider, type GallerySlide } from '@/components/GallerySlider';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { usePartners, useFeaturedJob, useHomeContent, useSiteSettings, useUpcomingEvents, usePublishedEvents } from '@/lib/hooks';
 import { normalizeHomeContent } from '@/lib/utils';
 import { formatDate } from '@/lib/utils';
@@ -107,20 +108,32 @@ export default function HomePage() {
             <div><Eyebrow>{content.eventsKicker}</Eyebrow><h2 className='mt-4 text-3xl sm:text-5xl'>{content.eventsHeading}</h2></div>
             <Link to='/events' className='inline-flex items-center gap-2 text-sm font-semibold text-primary'>{content.eventsLinkLabel} <ArrowRight className='h-4 w-4' /></Link>
           </div>
-          <div className='mt-12 grid gap-6 lg:grid-cols-[1.35fr_.65fr]'>
-            <Link to={featuredEvent ? `/events/${featuredEvent.slug}` : '/events'} className='group relative min-h-[480px] overflow-hidden rounded-[1.5rem] bg-primary'>
+          <div className='mt-12 grid items-start gap-6 lg:grid-cols-[1.35fr_.65fr]'>
+            {/* Cover shown in full, uncropped — same behaviour as the event card & detail page. */}
+            <Link to={featuredEvent ? `/events/${featuredEvent.slug}` : '/events'} className='group block overflow-hidden rounded-[1.5rem] bg-primary shadow-card'>
               {featuredEvent ? (
-                <img src={featuredEvent.coverImageUrl} alt='' className='absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105' />
+                <OptimizedImage
+                  src={featuredEvent.coverImageUrl}
+                  alt={featuredEvent.title}
+                  ratio='natural'
+                  className='w-full transition-transform duration-700 group-hover:scale-105'
+                />
               ) : (
-                <div className='absolute inset-0 bg-gradient-to-br from-primary via-primary/80 to-accent/40' aria-hidden />
+                <div className='aspect-video w-full bg-gradient-to-br from-primary via-primary/80 to-accent/40' aria-hidden />
               )}
-              <div className='absolute inset-0 bg-gradient-to-t from-primary via-primary/45 to-transparent' />
-              <div className='absolute inset-x-0 bottom-0 p-7 sm:p-10'><p className='text-xs font-semibold uppercase tracking-[.2em] text-gold'>{featuredEvent ? `${pinned ? 'Featured event' : 'Next event'} · ${formatDate(featuredEvent.startDateTimeUtc)}` : 'Events archive'}</p><h3 className='mt-4 max-w-2xl text-2xl leading-tight text-white sm:text-4xl'>{featuredEvent?.title ?? 'Catch up on RML seminars, panels, and commemorations'}</h3><span className='mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white'>{content.featuredCardCtaLabel} <ArrowRight className='h-4 w-4' /></span></div>
             </Link>
-            <Link to='/join' className='group flex min-h-[330px] flex-col justify-between rounded-[1.5rem] bg-accent p-8 text-white sm:p-10 lg:min-h-0'>
-              <div className='flex items-center justify-between'><Users className='h-6 w-6' /><span className='rounded-full border border-white/30 px-3 py-1 text-xs uppercase tracking-widest'>{job ? 'Open call' : content.joinFallbackBadge}</span></div>
-              <div><h3 className='text-2xl leading-tight text-white sm:text-3xl'>{job?.title ?? content.joinFallbackTitle}</h3><p className='mt-4 text-sm leading-6 text-white/75'>{job?.summary ?? content.joinFallbackText}</p><span className='mt-7 inline-flex items-center gap-2 text-sm font-semibold'>{content.joinCtaLabel} <ArrowRight className='h-4 w-4 transition group-hover:translate-x-1' /></span></div>
-            </Link>
+            {/* Event text sits to the right of the image, right before the join card. */}
+            <div className='flex flex-col gap-6'>
+              <Link to={featuredEvent ? `/events/${featuredEvent.slug}` : '/events'} className='group flex flex-col rounded-[1.5rem] bg-white p-8 shadow-card transition-shadow hover:shadow-cardhover sm:p-10'>
+                <Eyebrow>{featuredEvent ? `${pinned ? 'Featured event' : 'Next event'} · ${formatDate(featuredEvent.startDateTimeUtc)}` : 'Events archive'}</Eyebrow>
+                <h3 className='mt-4 text-2xl leading-tight sm:text-4xl'>{featuredEvent?.title ?? 'Catch up on RML seminars, panels, and commemorations'}</h3>
+                <span className='mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent'>{content.featuredCardCtaLabel} <ArrowRight className='h-4 w-4 transition group-hover:translate-x-1' /></span>
+              </Link>
+              <Link to='/join' className='group flex min-h-[330px] flex-col justify-between rounded-[1.5rem] bg-accent p-8 text-white sm:p-10 lg:min-h-0'>
+                <div className='flex items-center justify-between'><Users className='h-6 w-6' /><span className='rounded-full border border-white/30 px-3 py-1 text-xs uppercase tracking-widest'>{job ? 'Open call' : content.joinFallbackBadge}</span></div>
+                <div><h3 className='text-2xl leading-tight text-white sm:text-3xl'>{job?.title ?? content.joinFallbackTitle}</h3><p className='mt-4 text-sm leading-6 text-white/75'>{job?.summary ?? content.joinFallbackText}</p><span className='mt-7 inline-flex items-center gap-2 text-sm font-semibold'>{content.joinCtaLabel} <ArrowRight className='h-4 w-4 transition group-hover:translate-x-1' /></span></div>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
